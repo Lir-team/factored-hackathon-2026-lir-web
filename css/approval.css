@@ -1,74 +1,362 @@
-/* Approval card (human in the loop): one request, approve or reject. Reuses the slip look. */
+/*
+ * Authorization screen (human in the loop): one request, approve or reject.
+ * Quiet and functional, like a bank's transaction approval: one card, a status pill,
+ * statement-style details, what happens next, and two clear actions.
+ */
 
-.approval-page {
-  max-width: 40rem;
+.approval-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.approval {
-  margin-top: var(--space-5);
+.approval-main {
+  flex: 1;
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+  padding: var(--space-7) var(--space-4) var(--space-8);
 }
 
-.approval__title {
-  margin-top: var(--space-3);
-  font-family: var(--font-display);
-  font-size: var(--step-2);
-  line-height: var(--lh-head);
+.icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
 }
 
-.approval__details {
-  display: grid;
-  grid-template-columns: max-content 1fr;
+/* Top bar: the secure-connection badge on the right */
+
+.secure-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: var(--ok);
+}
+
+/* The card */
+
+.authz {
+  padding: var(--space-6);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-surface);
+  box-shadow: 0 1px 2px rgb(19 41 61 / 0.06);
+}
+
+.authz__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-2) var(--space-4);
-  margin: var(--space-5) 0 var(--space-4);
-  padding-block: var(--space-4);
-  border-block: 1px dashed var(--rule);
 }
 
-.approval__details dt {
+.authz__eyebrow {
+  font-size: var(--step--1);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--slate);
 }
 
-.approval__details dd {
-  margin: 0;
+.authz__title {
+  margin-top: var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--step-2);
   font-weight: 700;
-  overflow-wrap: anywhere;
+  line-height: var(--lh-head);
+  letter-spacing: -0.01em;
 }
 
-.approval__expires,
-.approval__note {
+.authz__lede {
+  margin-top: var(--space-2);
+  color: var(--slate);
+}
+
+.authz__subtitle {
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  font-weight: 700;
+}
+
+/* Details read like statement rows: label left, value right, thin rules between. */
+.authz__details {
+  margin: var(--space-5) 0 0;
+  border-top: 1px solid var(--rule);
+}
+
+.authz__details > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.authz__details dt {
+  flex: none;
+  color: var(--slate);
+}
+
+.authz__details dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.authz__details > .is-long {
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.authz__details > .is-long dd {
+  font-weight: 400;
+  text-align: left;
+}
+
+.authz__consequences {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--mist);
+  border-radius: var(--radius-control);
+}
+
+.authz__consequences ul {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-5);
+}
+
+.authz__consequences li + li {
+  margin-top: var(--space-1);
+}
+
+.authz__expires {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
   font-size: var(--step--1);
   color: var(--slate);
 }
 
-.approval__actions {
-  display: flex;
-  flex-wrap: wrap;
+.authz__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
-  margin-block: var(--space-5) var(--space-3);
+  margin-top: var(--space-5);
 }
 
-.approval__actions .button {
-  flex: 1 1 10rem;
+.authz__actions .button {
+  gap: var(--space-2);
+  padding-inline: var(--space-4);
 }
 
-.approval-status {
+.authz__foot {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+  font-size: var(--step--1);
+  color: var(--slate);
+}
+
+.authz__foot p:first-child {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.authz__ref span:last-child {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  color: var(--ink);
+}
+
+/* Status pill */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.125rem var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--step--1);
+  font-weight: 700;
+  background: var(--marigold-tint);
+  color: var(--ink);
+}
+
+.status-pill::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--marigold);
+}
+
+.status-pill[data-status="approved"] {
+  background: #e6f2ec;
+}
+
+.status-pill[data-status="approved"]::before {
+  background: var(--ok);
+}
+
+.status-pill[data-status="rejected"],
+.status-pill[data-status="expired"] {
+  background: var(--mist);
+}
+
+.status-pill[data-status="rejected"]::before,
+.status-pill[data-status="expired"]::before {
+  background: var(--slate);
+}
+
+/* Outcome after a decision, and the error screen */
+
+.outcome {
+  display: flex;
+  gap: var(--space-3);
   margin-top: var(--space-5);
   padding: var(--space-4);
-  border-left: 4px solid var(--marigold);
-  background: var(--paper);
   border-radius: var(--radius-control);
-  font-weight: 700;
+  background: #e6f2ec;
 }
 
-.approval-status[data-tone="ok"] {
-  border-color: var(--ok);
+.outcome[data-tone="neutral"] {
+  background: var(--mist);
 }
 
-.approval-status[data-tone="error"] {
-  border-color: var(--alert);
+.outcome[data-tone="error"] {
   background: var(--alert-tint);
 }
 
-.approval-loading {
+.outcome__icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+  color: var(--ok);
+}
+
+.outcome[data-tone="neutral"] .outcome__icon {
   color: var(--slate);
+}
+
+.outcome[data-tone="error"] .outcome__icon,
+.outcome__icon--error {
+  color: var(--alert);
+}
+
+.outcome__title {
+  font-weight: 700;
+}
+
+.outcome__text {
+  margin-top: var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+.authz--error {
+  text-align: center;
+}
+
+.authz--error .outcome__icon {
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 auto var(--space-2);
+}
+
+.authz--error .button {
+  margin-top: var(--space-5);
+}
+
+/* Busy button */
+
+.button__spinner {
+  display: none;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.button[aria-busy="true"] .button__spinner {
+  display: inline-block;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.button[aria-busy="true"]:disabled {
+  opacity: 1;
+}
+
+/* Loading skeleton */
+
+.skeleton {
+  border-radius: var(--radius-control);
+  background: linear-gradient(90deg, var(--mist) 25%, #f4f7f8 50%, var(--mist) 75%) 0 0 / 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton--eyebrow {
+  width: 40%;
+  height: 0.875rem;
+}
+
+.skeleton--title {
+  width: 75%;
+  height: 1.75rem;
+  margin: var(--space-4) 0 var(--space-5);
+}
+
+.skeleton--row {
+  height: 1.25rem;
+  margin-top: var(--space-3);
+}
+
+.skeleton--button {
+  height: 3rem;
+  margin-top: var(--space-6);
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .button__spinner {
+    animation: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .approval-main {
+    padding-top: var(--space-5);
+  }
+
+  .authz {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .authz__actions {
+    grid-template-columns: 1fr;
+  }
 }

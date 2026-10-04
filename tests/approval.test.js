@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { approvalParams, decideApproval, loadApproval, statusMessage } from "../js/core/approval.js";
+import { approvalParams, decideApproval, errorMessage, loadApproval, outcomeMessage } from "../js/core/approval.js";
 
 const ENDPOINT = "http://localhost:8080/v1/approvals";
 const LINK = { id: "APR-ABC123", token: "tok_1-2" };
@@ -80,10 +80,20 @@ test("a network failure is its own kind", async () => {
 });
 
 test("decided cards say what happened", () => {
-  assert.equal(statusMessage(CARD), null);
-  assert.deepEqual(
-    statusMessage({ status: "approved", result: { dispute_case_id: "DSP-1" } }),
-    { key: "approval.done.dispute", vars: { id: "DSP-1" } },
-  );
-  assert.deepEqual(statusMessage({ status: "rejected" }), { key: "approval.done.rejected", vars: {} });
+  assert.equal(outcomeMessage(CARD), null);
+  assert.deepEqual(outcomeMessage({ status: "approved", result: { dispute_case_id: "DSP-1" } }), {
+    tone: "ok",
+    title: "approval.outcome.approved.title",
+    text: "approval.outcome.dispute.text",
+    vars: { id: "DSP-1" },
+  });
+  assert.equal(outcomeMessage({ status: "rejected" }).tone, "neutral");
+});
+
+test("every error kind has its own screen, unknown ones fall back to server", () => {
+  assert.deepEqual(errorMessage("expired"), {
+    title: "approval.error.expired.title",
+    text: "approval.error.expired.text",
+  });
+  assert.equal(errorMessage("weird").title, "approval.error.server.title");
 });

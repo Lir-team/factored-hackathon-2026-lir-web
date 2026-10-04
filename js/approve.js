@@ -1,20 +1,19 @@
 /*
- * Approval page: the card behind a single-use link. Every value is written with
+ * Authorization screen: the request behind a single-use link. Every value is written with
  * textContent (never HTML): the card comes from the API, not from this repo.
  */
-import { approvalParams, decideApproval, loadApproval, statusMessage } from "./core/approval.js";
+import {
+  approvalParams,
+  decideApproval,
+  errorMessage,
+  loadApproval,
+  outcomeMessage,
+} from "./core/approval.js";
 import { applyTranslations, getLocale, isLanguage, setLanguage, t } from "./i18n/index.js";
 
 const $ = (id) => document.getElementById(id);
 const endpoint = window.LIR_CONFIG?.approvalsEndpoint;
-
-function show(message, tone) {
-  const status = $("approval-status");
-  status.textContent = message;
-  status.dataset.tone = tone;
-  status.hidden = false;
-  status.focus();
-}
+const LONG_VALUE = 32;
 
 function translate(language) {
   if (isLanguage(language)) setLanguage(language);
@@ -23,37 +22,84 @@ function translate(language) {
   applyTranslations(document);
 }
 
+function setStatus(status) {
+  const pill = $("approval-pill");
+  pill.dataset.status = status;
+  pill.textContent = t(`approval.status.${status}`);
+}
+
 function render(card) {
   $("approval-title").textContent = card.title;
+  $("approval-ref").textContent = card.approval_id;
+
   const details = $("approval-details");
-  details.replaceChildren();
-  for (const { label, value } of card.details) {
-    const term = document.createElement("dt");
-    term.textContent = label;
-    const description = document.createElement("dd");
-    description.textContent = value;
-    details.append(term, description);
-  }
+  details.replaceChildren(
+    ...card.details.map(({ label, value }) => {
+      const row = document.createElement("div");
+      // Long values (a reason) read better under their label than squeezed to the right.
+      if (value.length > LONG_VALUE) row.className = "is-long";
+      const term = document.createElement("dt");
+      term.textContent = label;
+      const description = document.createElement("dd");
+      description.textContent = value;
+      row.append(term, description);
+      return row;
+    }),
+  );
+
   const expires = new Date(card.expires_at);
   $("approval-expires").textContent = t("approval.expires", {
     time: expires.toLocaleString(getLocale(), { dateStyle: "medium", timeStyle: "short" }),
   });
+
   $("approval-loading").hidden = true;
   $("approval").hidden = false;
   settle(card);
 }
 
-/** A decided card keeps its content but loses its buttons. */
+/** A decided card keeps its details, loses its actions and says what happened. */
 function settle(card) {
-  const message = statusMessage(card);
+  setStatus(card.status);
+  const message = outcomeMessage(card);
   if (!message) return;
-  $("approval-actions").hidden = true;
-  show(t(message.key, message.vars), card.status === "approved" ? "ok" : "info");
+  for (const id of ["approval-actions", "approval-consequences", "approval-expires-row", "approval-lede"]) {
+    $(id).hidden = true;
+  }
+  const outcome = $("approval-outcome");
+  outcome.dataset.tone = message.tone;
+  $("approval-outcome-icon").setAttribute("href", message.tone === "ok" ? "#i-check" : "#i-x");
+  $("approval-outcome-title").textContent = t(message.title);
+  // Ids such as DSP-84E9A26A0C stay on one line: a non-breaking hyphen.
+  const vars = Object.fromEntries(
+    Object.entries(message.vars).map(([k, v]) => [k, String(v).replaceAll("-", "\u2011")]),
+  );
+  $("approval-outcome-text").textContent = t(message.text, vars);
+  outcome.hidden = false;
+  outcome.focus();
 }
 
+/** The whole screen for a link that cannot be used. */
 function fail(kind) {
+  const { title, text } = errorMessage(kind);
   $("approval-loading").hidden = true;
-  show(t(`approval.error.${kind}`), "error");
+  $("approval").hidden = true;
+  $("approval-error-title").textContent = t(title);
+  $("approval-error-text").textContent = t(text);
+  const error = $("approval-error");
+  error.hidden = false;
+  error.focus();
+}
+
+/** A decision that could not be applied, shown inside the card. */
+function refuse(kind) {
+  const { title, text } = errorMessage(kind);
+  const outcome = $("approval-outcome");
+  outcome.dataset.tone = "error";
+  $("approval-outcome-icon").setAttribute("href", "#i-alert");
+  $("approval-outcome-title").textContent = t(title);
+  $("approval-outcome-text").textContent = t(text);
+  outcome.hidden = false;
+  outcome.focus();
 }
 
 async function main() {
@@ -72,6 +118,7 @@ async function main() {
   const buttons = [$("approve"), $("reject")];
   for (const button of buttons) {
     button.addEventListener("click", async () => {
+      $("approval-outcome").hidden = true;
       for (const b of buttons) {
         b.disabled = true;
         b.setAttribute("aria-busy", String(b === button));
@@ -81,7 +128,8 @@ async function main() {
       if (!decided.ok) {
         // Only a network failure can be retried: the others are final.
         if (decided.kind === "network") for (const b of buttons) b.disabled = false;
-        return show(t(`approval.error.${decided.kind}`), "error");
+        else $("approval-actions").hidden = true;
+        return refuse(decided.kind);
       }
       card = decided.card;
       settle(card);

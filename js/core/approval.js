@@ -98,15 +98,29 @@ export async function decideApproval(
   }
 }
 
-/** The i18n key and values that describe a card's state for the customer. */
-export function statusMessage(card) {
+/**
+ * How a decided card reads: a tone and the i18n keys of its title and text.
+ * Null while it is pending (the buttons speak for themselves).
+ */
+export function outcomeMessage(card) {
   if (card.status === "approved") {
     const dispute = card.result?.dispute_case_id;
     return dispute
-      ? { key: "approval.done.dispute", vars: { id: dispute } }
-      : { key: "approval.done.approved", vars: {} };
+      ? { tone: "ok", title: "approval.outcome.approved.title", text: "approval.outcome.dispute.text", vars: { id: dispute } }
+      : { tone: "ok", title: "approval.outcome.approved.title", text: "approval.outcome.approved.text", vars: {} };
   }
-  if (card.status === "rejected") return { key: "approval.done.rejected", vars: {} };
-  if (card.status === "expired") return { key: "approval.error.expired", vars: {} };
-  return null; // pending: the buttons speak for themselves
+  if (card.status === "rejected") {
+    return { tone: "neutral", title: "approval.outcome.rejected.title", text: "approval.outcome.rejected.text", vars: {} };
+  }
+  if (card.status === "expired") {
+    return { tone: "neutral", title: "approval.error.expired.title", text: "approval.error.expired.text", vars: {} };
+  }
+  return null;
+}
+
+/** The i18n keys of the screen for a link that cannot be used. */
+export function errorMessage(kind) {
+  const known = ["not_found", "expired", "decided", "changed", "server", "network"];
+  const key = known.includes(kind) ? kind : "server";
+  return { title: `approval.error.${key}.title`, text: `approval.error.${key}.text` };
 }
