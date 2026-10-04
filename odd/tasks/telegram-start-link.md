@@ -47,15 +47,15 @@ sign-in or token refresh, any backend code.
 Route for every task: delegated writer (one bounded writer for 2+ non-trivial
 files, parent orchestrates).
 
-- [ ] T1, plan: this document and the brief. Commit `docs(odd)`.
-- [ ] T2, submit: test-first `telegram_start_url` pass-through and validation,
+- [x] T1, plan: this document and the brief. Commit `docs(odd)`.
+- [x] T2, submit: test-first `telegram_start_url` pass-through and validation,
   and the `Authorization` header; `casesEndpoint`/`authToken` in config.
-- [ ] T3, success screen: Telegram button, explanation, neutral fallback, i18n
+- [x] T3, success screen: Telegram button, explanation, neutral fallback, i18n
   in three languages.
-- [ ] T4, QR: vendor one small MIT QR generator under `js/vendor/`, render on
+- [x] T4, QR: vendor one small MIT QR generator under `js/vendor/`, render on
   wide screens only, credit in README.
-- [ ] T5, contract: `docs/case-contract.md` per the brief.
-- [ ] T6, screenshots and README: success screen with the Telegram button.
+- [x] T5, contract: `docs/case-contract.md` per the brief.
+- [x] T6, screenshots and README: success screen with the Telegram button.
 
 ## Acceptance criteria (from the brief)
 
@@ -83,8 +83,37 @@ files, parent orchestrates).
 
 ## Progress and evidence
 
-- T1: in progress.
+- T1: `9cfc57f` docs(odd). Brief and this plan.
+- T2: `5579405` feat(submit). Test-first: six new cases in
+  `tests/submit.test.js`; RED was 5 failing of 50 (URL present, absent, hostile
+  URLs, demo, Bearer header); GREEN 50/50. `telegramStartUrl` keeps a link only
+  when `new URL()` gives protocol `https:` and host exactly `t.me` (and no
+  credentials or port). `app.js` passes `authToken` from `LIR_CONFIG`.
+- T3: `08a1488` feat(success). A real `<a target="_blank" rel="noopener
+  noreferrer">` in the primary button style, only for the telegram channel with
+  a link. Without one (older backend, demo), the contact and outcome lines are
+  neutral (`telegram_unlinked`, `other_unlinked`). The URL lives only in the
+  `href`; `view.success` is in memory and `localStorage` holds only the
+  language. Focus still moves to `#success`.
+- T4: `c462f48` feat(success). Vendored `kazuhikoarase/qrcode-generator`
+  `js/dist/qrcode.js` (commit `64f5976`, byte-identical, MIT) as a classic
+  `defer` script plus `js/vendor/qrcode.LICENSE`; pure `js/core/qr.js` draws an
+  inline SVG path; shown only above 900px with an `aria-label` pointing to the
+  button. `tests/qr.test.js` (3 cases) was written with the module, so no RED
+  was observed for it. Not decoded with a scanner (no decoder installed); the
+  test checks the matrix against the library.
+- T5: `e88ba0d` docs(contract). 202 row and example, Start-link rule,
+  Authorization header, Cloud Storage `cases-inbox` hand-off with attributes as
+  object metadata, CORS and API Gateway, JWT customer match, informational
+  Telegram handle. `schema_version` stays `"1.1"`.
+- T6: `879121e` docs. `docs/screenshots/success-telegram.png` (1440 wide, EN,
+  button and QR) and `success-telegram-mobile.png` (390 wide, ES, full-width
+  button, no QR), from a scratch copy with a stubbed fetch (not committed).
+  The demo-mode neutral path was checked the same way. README config and
+  credits updated.
+- Checks: `node --test tests/` 53/53 (i18n key parity included).
 
 ## Next step
 
-T2, submit (test-first).
+Parent review. Possible follow-up: the technical view still labels the
+metadata "Pub/Sub attributes" (`success.tech.attributes`).
