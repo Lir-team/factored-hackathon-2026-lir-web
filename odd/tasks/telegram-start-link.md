@@ -117,3 +117,18 @@ files, parent orchestrates).
 
 Parent review. Possible follow-up: the technical view still labels the
 metadata "Pub/Sub attributes" (`success.tech.attributes`).
+
+## Native review (2026-10-04)
+
+- Range `2c37e6e..1adbae6`. Assessed as medium (`slice_budget_reached`). The
+  user granted consent.
+- One lens (reliability): **approved**. Acknowledged; authority burned
+  (lineage `review-e7b3d859d6d905af`).
+- The parent decoded the QR in the success screenshot with OpenCV and got the
+  stub `https://t.me/lir_bank_bot?start=...` URL.
+- Advisory follow-ups (suggestions, not blocking):
+  - [ ] R3-start-url-credential-port-untested (`js/core/submit.js:30-31`): add
+    tests for credentials and for a non-default port on the exact `t.me` host.
+  - [ ] R3-success-handoff-decision-untested (`js/ui/success.js:13-18`):
+    extract the linked, unlinked and non-telegram decision into a pure
+    `js/core` helper with tests.
