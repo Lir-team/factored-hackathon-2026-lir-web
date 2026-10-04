@@ -187,6 +187,27 @@ test("a Start link that is not https://t.me/ is dropped", async () => {
   }
 });
 
+test("a t.me Start link with credentials or a non-default port is dropped", async () => {
+  const smuggled = [
+    "https://user@t.me/lir_bank_bot?start=abc",
+    "https://user:pass@t.me/lir_bank_bot?start=abc",
+    "https://:pass@t.me/lir_bank_bot?start=abc",
+    "https://t.me:8443/lir_bank_bot?start=abc",
+  ];
+  for (const telegram_start_url of smuggled) {
+    const { impl } = liveAccepted({ telegram_start_url });
+    const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl });
+    assert.equal(outcome.telegram_start_url, null, telegram_start_url);
+  }
+});
+
+test("an explicit default port :443 is the same origin and is normalized away", async () => {
+  // The URL parser drops the scheme's default port, so this is https://t.me/.
+  const { impl } = liveAccepted({ telegram_start_url: "https://t.me:443/lir_bank_bot?start=abc" });
+  const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl });
+  assert.equal(outcome.telegram_start_url, "https://t.me/lir_bank_bot?start=abc");
+});
+
 test("demo mode never offers a Start link", async () => {
   const outcome = await submitCase(payload, { endpoint: null, demoDelayMs: 0 });
   assert.equal(outcome.telegram_start_url, null);
