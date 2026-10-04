@@ -143,18 +143,23 @@ export default {
   "success.next.contact.whatsapp":
     "Lir, assistente virtual do LATAM Bank, analisa seu caso e fala com você pelo WhatsApp no {value}.",
   "success.next.contact.telegram":
-    "Lir, assistente virtual do LATAM Bank, analisa seu caso e fala com você pelo Telegram ({value}).",
+    "Para receber novidades, abra o Telegram e inicie a conversa com o Lir, assistente virtual do LATAM Bank. Ele vai falar com você por lá sobre este caso.",
+  "success.next.contact.telegram_unlinked":
+    "O LATAM Bank analisa seu caso e vai entrar em contato com você.",
   "success.next.contact.email": "Lir, assistente virtual do LATAM Bank, analisa seu caso e escreve para {value}.",
   "success.next.contact.phone": "Um atendente do LATAM Bank analisa seu caso e liga para {value}.",
   "success.next.freeze": "Você pediu o bloqueio deste cartão: {card}. Enquanto estiver bloqueado, nenhuma compra nova é aprovada.",
   "success.next.freeze_many": "Você pediu o bloqueio destes cartões: {cards}. Enquanto estiverem bloqueados, nenhuma compra nova é aprovada.",
   "success.next.fraud": "Se confirmarmos que você não fez a cobrança, avisamos quando o dinheiro volta para sua conta.",
   "success.next.other": "Avisamos pelo mesmo canal quando seu caso tiver resposta.",
+  "success.next.other_unlinked": "Avisamos quando seu caso tiver resposta.",
   "success.demo":
     "Modo de demonstração: o relato não saiu do seu navegador. Configure casesEndpoint em js/config.js para enviá-lo a um servidor.",
   "success.tech.summary": "Visão técnica",
   "success.tech.payload": "Caso enviado (JSON)",
   "success.tech.attributes": "Atributos para o Pub/Sub",
+  "success.telegram.button": "Continuar no Telegram",
+  "success.telegram.new_tab": "(abre em uma nova aba)",
   "success.again": "Relatar outro problema",
 
   "language.es": "Español",

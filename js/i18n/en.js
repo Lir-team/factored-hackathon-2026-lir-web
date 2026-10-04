@@ -140,18 +140,24 @@ export default {
   "success.folio": "Your case reference:",
   "success.next.title": "What happens next",
   "success.next.contact.whatsapp": "Lir, LATAM Bank's assistant, reviews your case and messages you on WhatsApp at {value}.",
-  "success.next.contact.telegram": "Lir, LATAM Bank's assistant, reviews your case and messages you on Telegram ({value}).",
+  "success.next.contact.telegram":
+    "To receive updates, open Telegram and press Start. Lir, LATAM Bank's assistant, will message you there about this case.",
+  "success.next.contact.telegram_unlinked":
+    "LATAM Bank reviews your case and will get in touch with you about it.",
   "success.next.contact.email": "Lir, LATAM Bank's assistant, reviews your case and writes to you at {value}.",
   "success.next.contact.phone": "A LATAM Bank agent reviews your case and calls you at {value}.",
   "success.next.freeze": "You asked us to freeze this card: {card}. While it's frozen, no new purchases go through.",
   "success.next.freeze_many": "You asked us to freeze these cards: {cards}. While they're frozen, no new purchases go through.",
   "success.next.fraud": "If we confirm you didn't make the charge, we'll tell you when the money goes back to your account.",
   "success.next.other": "We'll let you know on the same channel when your case has an answer.",
+  "success.next.other_unlinked": "We'll let you know when your case has an answer.",
   "success.demo":
     "Demo mode: the report didn't leave your browser. Set casesEndpoint in js/config.js to send it to a server.",
   "success.tech.summary": "Technical view",
   "success.tech.payload": "Case sent (JSON)",
   "success.tech.attributes": "Pub/Sub attributes",
+  "success.telegram.button": "Continue on Telegram",
+  "success.telegram.new_tab": "(opens in a new tab)",
   "success.again": "Report another problem",
 
   "language.es": "Español",

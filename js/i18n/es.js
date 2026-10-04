@@ -142,18 +142,24 @@ export default {
   "success.folio": "Tu folio de seguimiento:",
   "success.next.title": "Qué sigue",
   "success.next.contact.whatsapp": "Lir, el asistente de LATAM Bank, revisa tu caso y te escribe por WhatsApp al {value}.",
-  "success.next.contact.telegram": "Lir, el asistente de LATAM Bank, revisa tu caso y te escribe por Telegram ({value}).",
+  "success.next.contact.telegram":
+    "Para recibir novedades, abre Telegram e inicia el chat con Lir, el asistente de LATAM Bank. Te escribirá ahí sobre este caso.",
+  "success.next.contact.telegram_unlinked":
+    "LATAM Bank revisa tu caso y se pondrá en contacto contigo.",
   "success.next.contact.email": "Lir, el asistente de LATAM Bank, revisa tu caso y te escribe a {value}.",
   "success.next.contact.phone": "Un ejecutivo de LATAM Bank revisa tu caso y te llama al {value}.",
   "success.next.freeze": "Pediste congelar esta tarjeta: {card}. Mientras esté congelada no pasa ninguna compra nueva.",
   "success.next.freeze_many": "Pediste congelar estas tarjetas: {cards}. Mientras estén congeladas no pasa ninguna compra nueva.",
   "success.next.fraud": "Si confirmamos que no hiciste el cargo, te decimos cuándo se devuelve tu dinero.",
   "success.next.other": "Te avisamos por el mismo canal cuando tu caso tenga respuesta.",
+  "success.next.other_unlinked": "Te avisamos cuando tu caso tenga respuesta.",
   "success.demo":
     "Modo demostración: el reporte no salió de tu navegador. Configura casesEndpoint en js/config.js para enviarlo a un servidor.",
   "success.tech.summary": "Vista técnica",
   "success.tech.payload": "Caso enviado (JSON)",
   "success.tech.attributes": "Atributos para Pub/Sub",
+  "success.telegram.button": "Continuar en Telegram",
+  "success.telegram.new_tab": "(se abre en una pestaña nueva)",
   "success.again": "Reportar otro problema",
 
   "language.es": "Español",
