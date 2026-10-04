@@ -23,13 +23,17 @@ More screenshots: [desktop](docs/screenshots/desktop.png),
 ## Run it
 
 ES modules do not load from `file://`, so serve the folder with any static
-server:
+server. Use port 5500: the lir-agent API runs on 8080 and only allows the
+`http://localhost:5500` origin (`CORS_ORIGINS` in its `.env`).
 
 ```sh
-python3 -m http.server 8080
+# Terminal 1: the lir-agent API on :8080 (see that repo's README)
+
+# Terminal 2: web on :5500
+cd ../lir-web && python3 -m http.server 5500
 ```
 
-Then open <http://localhost:8080/>.
+Then open <http://localhost:5500/>.
 
 ## Test it
 
@@ -48,9 +52,11 @@ remembers the choice).
 
 `js/config.js` sets `window.LIR_CONFIG`:
 
-- `casesEndpoint`: the API Gateway URL of `POST /v1/cases`. With `null` (the
-  default) the page runs in demo mode: it simulates the request and shows a
-  reference number and the payload, with no Telegram button.
+- `casesEndpoint`: the URL of `POST /v1/cases`. The default,
+  `http://localhost:8080/v1/cases`, is the local lir-agent API; a deployment
+  points it at the API Gateway. Set it to `null` for demo mode: the page
+  simulates the request and shows a reference number and the payload, with no
+  Telegram button.
 - `authToken`: the customer JWT the gateway checks, sent as
   `Authorization: Bearer <token>`. Sign-in is mocked in this demo, so the token
   is issued outside this repo. `null` sends no `Authorization` header.
