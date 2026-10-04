@@ -124,3 +124,21 @@ form produces a case payload that a future backend can publish to Pub/Sub.
 
 Parent screenshot check, then decide the PR strategy (the branch is about
 3,900 authored lines over five work-unit commits) and the native review.
+
+## Native review (2026-10-04)
+
+- Range `0ed74c9..405a6b4`. Assessed as medium (`slice_budget_reached`). The
+  user granted consent.
+- One lens (reliability): **approved**. Acknowledged; authority burned
+  (lineage `review-99909d18f79f5a7a`).
+- Advisory follow-ups (informational, not blocking):
+  - [ ] R3-silent-rejection (`js/app.js:203-207`): a 4xx whose error keys are
+    all unknown shows no message. Fall back to `send.rejected`.
+  - [ ] R3-idempotency-after-422 (`js/app.js:187`): rotate `case_id` after a
+    rejection, or limit replay to successful responses in the contract.
+  - [ ] R3-freeze-first-card-only (`js/core/case-rules.js:124-126`): fraud
+    charges on two cards freeze only the first.
+  - [ ] R3-timeout-not-covering-body (`js/core/submit.js:43-47`): a stalled
+    `response.json()` leaves the form stuck in "Sending".
+  - [ ] R3-submit-coverage-gaps (`js/core/submit.js:26-27`): add tests for the
+    timeout path and for a 4xx without an errors body.
