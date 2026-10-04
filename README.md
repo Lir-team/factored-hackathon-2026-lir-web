@@ -3,16 +3,20 @@
 The customer-facing support form of **LATAM Bank**, the synthetic bank of the
 Factored AI & Data Hackathon 2026. A signed-in customer reports a problem
 (an unrecognized charge, a lost or stolen card, a wrong fee, and so on), and
-the page builds a versioned case payload that a backend can publish to
-Pub/Sub for the Lir agent.
+the page sends a versioned case payload to the bank's API, which hands it to
+the Lir agent. When the customer picks Telegram, the confirmation offers a
+"Continue on Telegram" button (and a QR code on wide screens) so they can open
+the chat with Lir.
 
 It is plain HTML, CSS and JavaScript: no framework, no bundler, no npm
-dependencies. The backend does not exist yet; this repo defines the contract
-it should accept.
+dependencies. This repo defines the contract the backend (the `lir-agent`
+repo, behind Google API Gateway) accepts.
 
 ![Desktop, unrecognized-charge path](docs/screenshots/desktop-fraud.png)
 
 More screenshots: [desktop](docs/screenshots/desktop.png),
+[Telegram hand-off](docs/screenshots/success-telegram.png),
+[Telegram hand-off, mobile](docs/screenshots/success-telegram-mobile.png),
 [mobile](docs/screenshots/mobile.png),
 [mobile, lost card](docs/screenshots/mobile-lost-card.png).
 
@@ -42,15 +46,21 @@ remembers the choice).
 
 ## Configure it
 
-`js/config.js` sets `window.LIR_CONFIG`. With `casesEndpoint: null` (the
-default) the page runs in demo mode: it simulates the request and shows a
-reference number and the payload. Set it to a URL to POST real cases.
+`js/config.js` sets `window.LIR_CONFIG`:
+
+- `casesEndpoint`: the API Gateway URL of `POST /v1/cases`. With `null` (the
+  default) the page runs in demo mode: it simulates the request and shows a
+  reference number and the payload, with no Telegram button.
+- `authToken`: the customer JWT the gateway checks, sent as
+  `Authorization: Bearer <token>`. Sign-in is mocked in this demo, so the token
+  is issued outside this repo. `null` sends no `Authorization` header.
 
 ## Backend contract
 
 The page sends a versioned JSON case to `POST /v1/cases` with an
-`Idempotency-Key`. The endpoint, error shape, category-to-intent mapping and
-the Pub/Sub publishing guidance are in
+`Idempotency-Key`. The endpoint, error shape, Telegram Start link,
+category-to-intent mapping, the Cloud Storage hand-off to the agent and the
+CORS rules are in
 [`docs/case-contract.md`](docs/case-contract.md); the payload schema is
 [`schema/case.schema.json`](schema/case.schema.json).
 
