@@ -94,6 +94,9 @@ npm dependencies. If it costs too much, ship the button alone.
   which pushes it to the agent. The case attributes travel as object metadata.
   Keep `pubsubAttributesFor` (it still describes those attributes), but drop
   the ordering-key and direct-publish guidance.
+  **Superseded (2026-10-04):** the agent publishes each case to Pub/Sub itself
+  (ordering key `customer_id`) and the bucket copy is an archive only; there is
+  no bucket notification. See `docs/case-contract.md`.
 - Replace "CORS and IAP" with "CORS and API Gateway": cross-origin request,
   the gateway/backend must answer the `OPTIONS` preflight and allow the page's
   origin, `POST`, and the `Content-Type`, `Idempotency-Key` and `Authorization`
