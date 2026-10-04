@@ -206,4 +206,8 @@ export default {
   "approval.error.server.text": "Fue un problema nuestro. Intenta de nuevo en unos minutos.",
   "approval.error.network.title": "Sin conexión con el banco",
   "approval.error.network.text": "Revisa tu conexión a internet e intenta de nuevo.",
+  "approval.error.sign_in.title": "Inicia sesión para continuar",
+  "approval.error.sign_in.text": "Por tu seguridad, esta solicitud se aprueba con tu sesión del banco iniciada. Entra a la banca en línea y vuelve a abrir el enlace.",
+  "approval.error.not_yours.title": "Esta solicitud no es de tu cuenta",
+  "approval.error.not_yours.text": "Iniciaste sesión con otra cuenta. Si no reconoces esta solicitud, no hagas nada y escríbenos en el chat.",
 };

@@ -206,4 +206,8 @@ export default {
   "approval.error.server.text": "O problema foi do nosso lado. Tente de novo em alguns minutos.",
   "approval.error.network.title": "Sem conexão com o banco",
   "approval.error.network.text": "Verifique sua conexão com a internet e tente de novo.",
+  "approval.error.sign_in.title": "Entre na sua conta para continuar",
+  "approval.error.sign_in.text": "Por segurança, esta solicitação é aprovada com sua sessão do banco iniciada. Entre no internet banking e abra o link de novo.",
+  "approval.error.not_yours.title": "Esta solicitação não é da sua conta",
+  "approval.error.not_yours.text": "Você entrou com outra conta. Se não reconhece esta solicitação, não faça nada e escreva no chat.",
 };

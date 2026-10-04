@@ -9,10 +9,13 @@
  * Outcomes:
  *   { ok: true, card }                      card: the request as the API returns it
  *   { ok: false, kind }                     kind: "not_found" | "expired" | "decided" |
- *                                                  "changed" | "server" | "network"
+ *                                                  "changed" | "sign_in" | "not_yours" |
+ *                                                  "server" | "network"
  */
 
 const ERRORS_BY_DETAIL = Object.freeze({
+  sign_in_required: "sign_in",
+  not_your_request: "not_yours",
   not_found: "not_found",
   expired: "expired",
   not_pending: "decided",
@@ -52,14 +55,19 @@ async function outcome(response) {
   return { ok: false, kind, status: response.status };
 }
 
+/** Headers for a call; with the bank's sign-in (step-up) the customer's JWT goes too. */
+function headers(extra, authToken) {
+  return authToken ? { ...extra, Authorization: `Bearer ${authToken}` } : extra;
+}
+
 /** Load the card behind the link. */
 export async function loadApproval(
   endpoint,
   { id, token },
-  { fetchImpl = globalThis.fetch, timeoutMs = 15000 } = {},
+  { fetchImpl = globalThis.fetch, timeoutMs = 15000, authToken = null } = {},
 ) {
   // The token is a credential: in a header, so no proxy or gateway logs it with the URL.
-  const init = { method: "GET", headers: { "X-Approval-Token": token } };
+  const init = { method: "GET", headers: headers({ "X-Approval-Token": token }, authToken) };
   try {
     return await outcome(
       await request(`${endpoint}/${encodeURIComponent(id)}`, init, fetchImpl, timeoutMs),
@@ -78,7 +86,7 @@ export async function decideApproval(
   { id, token },
   card,
   approve,
-  { fetchImpl = globalThis.fetch, timeoutMs = 15000 } = {},
+  { fetchImpl = globalThis.fetch, timeoutMs = 15000, authToken = null } = {},
 ) {
   const body = {
     decision: approve ? "approve" : "reject",
@@ -88,7 +96,11 @@ export async function decideApproval(
   try {
     const response = await request(
       `${endpoint}/${encodeURIComponent(id)}/decision`,
-      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
+      {
+        method: "POST",
+        headers: headers({ "Content-Type": "application/json" }, authToken),
+        body: JSON.stringify(body),
+      },
       fetchImpl,
       timeoutMs,
     );
@@ -120,7 +132,7 @@ export function outcomeMessage(card) {
 
 /** The i18n keys of the screen for a link that cannot be used. */
 export function errorMessage(kind) {
-  const known = ["not_found", "expired", "decided", "changed", "server", "network"];
+  const known = ["not_found", "expired", "decided", "changed", "sign_in", "not_yours", "server", "network"];
   const key = known.includes(kind) ? kind : "server";
   return { title: `approval.error.${key}.title`, text: `approval.error.${key}.text` };
 }

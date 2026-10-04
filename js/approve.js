@@ -13,6 +13,8 @@ import { applyTranslations, getLocale, isLanguage, setLanguage, t } from "./i18n
 
 const $ = (id) => document.getElementById(id);
 const endpoint = window.LIR_CONFIG?.approvalsEndpoint;
+// The customer's JWT from the bank's sign-in: required when approvals need it (step-up).
+const auth = { authToken: window.LIR_CONFIG?.authToken ?? null };
 const LONG_VALUE = 32;
 
 function translate(language) {
@@ -85,6 +87,11 @@ function fail(kind) {
   $("approval").hidden = true;
   $("approval-error-title").textContent = t(title);
   $("approval-error-text").textContent = t(text);
+  // Signing in is a step to take, not an alarm: a lock in ink instead of a red warning.
+  const signIn = kind === "sign_in";
+  // Optional: a cached page without these elements must still show the error.
+  $("approval-error-icon")?.setAttribute("href", signIn ? "#i-lock" : "#i-alert");
+  $("approval-error-svg")?.classList.toggle("outcome__icon--calm", signIn);
   const error = $("approval-error");
   error.hidden = false;
   error.focus();
@@ -109,7 +116,7 @@ async function main() {
   history.replaceState(null, "", location.pathname);
   if (!link || !endpoint) return fail("not_found");
 
-  const loaded = await loadApproval(endpoint, link);
+  const loaded = await loadApproval(endpoint, link, auth);
   if (!loaded.ok) return fail(loaded.kind);
   let card = loaded.card;
   translate(card.language);
@@ -123,7 +130,7 @@ async function main() {
         b.disabled = true;
         b.setAttribute("aria-busy", String(b === button));
       }
-      const decided = await decideApproval(endpoint, link, card, button.id === "approve");
+      const decided = await decideApproval(endpoint, link, card, button.id === "approve", auth);
       for (const b of buttons) b.removeAttribute("aria-busy");
       if (!decided.ok) {
         // Only a network failure can be retried: the others are final.

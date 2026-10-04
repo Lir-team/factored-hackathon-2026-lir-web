@@ -97,3 +97,26 @@ test("every error kind has its own screen, unknown ones fall back to server", ()
   });
   assert.equal(errorMessage("weird").title, "approval.error.server.title");
 });
+
+test("with the bank's sign-in, the customer's JWT goes with every call", async () => {
+  const { impl, calls } = fakeFetch(200, CARD);
+  await loadApproval(ENDPOINT, LINK, { fetchImpl: impl, authToken: "jwt-1" });
+  await decideApproval(ENDPOINT, LINK, CARD, true, { fetchImpl: impl, authToken: "jwt-1" });
+  assert.equal(calls[0].init.headers.Authorization, "Bearer jwt-1");
+  assert.equal(calls[1].init.headers.Authorization, "Bearer jwt-1");
+  const { impl: anonymous, calls: plain } = fakeFetch(200, CARD);
+  await loadApproval(ENDPOINT, LINK, { fetchImpl: anonymous });
+  assert.equal("Authorization" in plain[0].init.headers, false);
+});
+
+test("a missing sign-in and someone else's account have their own screens", async () => {
+  for (const [status, detail, kind] of [
+    [401, "sign_in_required", "sign_in"],
+    [403, "not_your_request", "not_yours"],
+  ]) {
+    const { impl } = fakeFetch(status, { detail });
+    const result = await loadApproval(ENDPOINT, LINK, { fetchImpl: impl });
+    assert.equal(result.kind, kind);
+    assert.equal(errorMessage(kind).title, `approval.error.${kind}.title`);
+  }
+});

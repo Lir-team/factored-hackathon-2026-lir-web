@@ -78,6 +78,9 @@ The lir-agent sends the customer a single-use link to it, by chat or Telegram bu
   `Referer`, and writes every value with `textContent`.
 - A spent, wrong or expired link, a request decided elsewhere and a network failure each get
   their own message. Only a network failure can be retried.
+- Step-up: when the agent requires the bank's sign-in for approvals, the page sends the
+  customer's JWT (`authToken`) with every call, and a missing or someone else's sign-in gets
+  its own screen.
 - `js/core/approval.js` has no DOM access; `tests/approval.test.js` covers it.
 
 ## Backend contract

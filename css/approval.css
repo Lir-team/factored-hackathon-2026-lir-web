@@ -270,6 +270,10 @@
   margin: 0 auto var(--space-2);
 }
 
+.authz--error .outcome__icon--calm {
+  color: var(--ink);
+}
+
 .authz--error .button {
   margin-top: var(--space-5);
 }

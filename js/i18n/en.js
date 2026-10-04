@@ -204,4 +204,8 @@ export default {
   "approval.error.server.text": "The problem was on our side. Try again in a few minutes.",
   "approval.error.network.title": "No connection to the bank",
   "approval.error.network.text": "Check your internet connection and try again.",
+  "approval.error.sign_in.title": "Sign in to continue",
+  "approval.error.sign_in.text": "For your security, this request is approved while signed in to the bank. Sign in to online banking and open the link again.",
+  "approval.error.not_yours.title": "This request is not for your account",
+  "approval.error.not_yours.text": "You are signed in with another account. If you do not recognize this request, do nothing and write to us in the chat.",
 };
