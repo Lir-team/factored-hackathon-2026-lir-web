@@ -8,7 +8,7 @@ import {
   transactionModeFor,
 } from "./core/case-rules.js";
 import { buildCasePayload, randomUUID, validateCase } from "./core/case-payload.js";
-import { submitCase } from "./core/submit.js";
+import { nextCaseId, partitionServerErrors, submitCase } from "./core/submit.js";
 import {
   applyTranslations,
   getHtmlLang,
@@ -43,7 +43,7 @@ const view = {
   serverErrors: {}, // field errors returned by the backend
   sendError: null, // { kind, status } of the last failed send
   sending: false,
-  caseId: randomUUID(), // stable across retries: it is the Idempotency-Key
+  caseId: randomUUID(), // the Idempotency-Key: kept across retries, rotated after a rejection
   success: null, // { payload, outcome }
 };
 
@@ -206,15 +206,18 @@ async function onSubmit(event) {
     return;
   }
 
-  if (outcome.kind === "rejected" && Object.keys(outcome.errors).length > 0) {
-    view.serverErrors = outcome.errors;
-    update();
-    $("#error-summary").focus();
-    return;
+  view.caseId = nextCaseId(outcome, view.caseId, randomUUID);
+  if (outcome.kind === "rejected") {
+    // Show what maps to a field; anything else (or no errors at all) gets the generic line.
+    const { fields, generic } = partitionServerErrors(outcome.errors, FIELD_ORDER);
+    view.serverErrors = fields;
+    if (generic) view.sendError = { kind: "rejected", status: outcome.status };
+  } else {
+    view.sendError = { kind: outcome.kind, status: outcome.status };
   }
-  view.sendError = { kind: outcome.kind, status: outcome.status };
   update();
-  $("#retry").focus();
+  if (Object.keys(view.serverErrors).length > 0) $("#error-summary").focus();
+  else $("#retry").focus();
 }
 
 function resetForm() {

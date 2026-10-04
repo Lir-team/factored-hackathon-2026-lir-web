@@ -19,23 +19,31 @@ Request headers:
 | `Accept`          | `application/json`                                 |
 | `Idempotency-Key` | the payload's `case_id` (a client UUID v4)         |
 
-The client keeps the same `case_id` across retries until it gets a success,
-so the backend must treat a repeated `Idempotency-Key` as the same case and
-answer with the original response.
+The client keeps the same `case_id` when it retries after a network error, a
+timeout or a 5xx, so the backend must treat a repeated `Idempotency-Key` as
+the same case and answer with the original successful response. Replay applies
+only to that same key:
+
+- After a 4xx the client rotates the key: the corrected answers go out with a
+  new `case_id`, so they are never answered with the replayed rejection.
+- The backend should store only successful (2xx) responses for replay. A key
+  whose earlier attempt failed is processed again as a fresh request.
 
 Responses:
 
 | Status | Body                                                        | Client behavior                          |
 |--------|-------------------------------------------------------------|------------------------------------------|
 | `202`  | `{"case_id": "…", "folio": "LB-2026-3F2A9C", "status": "received"}` | stamps the slip, shows the folio |
-| `422`  | `{"errors": {"description": "too_short"}}`                  | shows each error next to its field       |
-| other 4xx | any                                                      | "the bank rejected the report", retry    |
+| `422`  | `{"errors": {"description": "too_short"}}`                  | shows each error next to its field; new `case_id` |
+| other 4xx | any                                                      | "the bank rejected the report", retry with a new `case_id` |
 | 5xx, network, 15 s timeout | any                                     | keeps the answers, offers a retry        |
 
 Error codes are field-scoped. The client already translates `required`,
 `too_short`, `too_long`, `too_many`, `unknown`, `invalid`, `in_future`,
 `invalid_phone`, `invalid_email` and `invalid_telegram`; any other code shows
-a generic "check this answer" message. Field names match the form:
+a generic "check this answer" message. Unknown field names, or a 4xx without
+an `errors` map, show the "the bank rejected the report" line instead. Field
+names match the form:
 `category`, `transaction_ids`, `card_last4`, `incident_occurred_at`,
 `card_in_possession`, `shared_credentials`, `description`, `contact_channel`,
 `contact_value`, `declaration`.

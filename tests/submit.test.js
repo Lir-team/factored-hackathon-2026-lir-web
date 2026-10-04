@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { submitCase } from "../js/core/submit.js";
+import { nextCaseId, partitionServerErrors, submitCase } from "../js/core/submit.js";
 
 const payload = {
   schema_version: "1.0",
@@ -107,4 +107,34 @@ test("a body that never arrives times out too, and the request is aborted", { ti
   const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl, timeoutMs: 20 });
   assert.deepEqual(outcome, { ok: false, kind: "network" });
   assert.equal(signal.aborted, true);
+});
+
+const FIELDS = ["description", "contact_value"];
+
+test("a 4xx with only unknown error keys still asks for the generic rejection line", async () => {
+  const { impl } = fakeFetch({ status: 422, body: { errors: { customer_id: "mismatch" } } });
+  const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl });
+  assert.deepEqual(partitionServerErrors(outcome.errors, FIELDS), { fields: {}, generic: true });
+});
+
+test("partitionServerErrors keeps the fields the form can show", () => {
+  assert.deepEqual(partitionServerErrors({ description: "too_short" }, FIELDS), {
+    fields: { description: "too_short" },
+    generic: false,
+  });
+  assert.deepEqual(partitionServerErrors({ description: "too_short", foo: "bar" }, FIELDS), {
+    fields: { description: "too_short" },
+    generic: true,
+  });
+  assert.deepEqual(partitionServerErrors({}, FIELDS), { fields: {}, generic: true });
+  assert.deepEqual(partitionServerErrors(null, FIELDS), { fields: {}, generic: true });
+  assert.deepEqual(partitionServerErrors({ description: 42 }, FIELDS), { fields: {}, generic: true });
+});
+
+test("nextCaseId rotates the Idempotency-Key only after a rejection", () => {
+  const makeId = () => "new-id";
+  assert.equal(nextCaseId({ ok: false, kind: "rejected", status: 422, errors: {} }, "old-id", makeId), "new-id");
+  assert.equal(nextCaseId({ ok: false, kind: "network" }, "old-id", makeId), "old-id");
+  assert.equal(nextCaseId({ ok: false, kind: "server", status: 503 }, "old-id", makeId), "old-id");
+  assert.equal(nextCaseId({ ok: true, mode: "live" }, "old-id", makeId), "old-id");
 });

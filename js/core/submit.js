@@ -39,7 +39,7 @@ export async function submitCase(
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        // Same case_id on every retry, so the backend can drop duplicates.
+        // Same case_id on every retry after a network or server failure (see nextCaseId).
         "Idempotency-Key": payload.case_id,
       },
       body: JSON.stringify(payload),
@@ -72,4 +72,29 @@ export async function submitCase(
     return { ok: false, kind: "rejected", status: response.status, errors: body?.errors ?? {} };
   }
   return { ok: false, kind: "server", status: response.status };
+}
+
+/**
+ * Split a rejection's `errors` map into what the form can show next to a
+ * field (`fields`) and whether the generic "rejected" line is needed too:
+ * true when the body had no errors, or any key or code the form can't show.
+ */
+export function partitionServerErrors(errors, fieldOrder) {
+  const fields = {};
+  let generic = false;
+  for (const [field, code] of Object.entries(errors ?? {})) {
+    if (fieldOrder.includes(field) && typeof code === "string" && code) fields[field] = code;
+    else generic = true;
+  }
+  return { fields, generic: generic || Object.keys(fields).length === 0 };
+}
+
+/**
+ * The case_id (Idempotency-Key) for the next attempt. Network failures and
+ * 5xx keep it, so a retry is recognized as the same case; a rejection
+ * rotates it, so the corrected answers are not answered with the replay of
+ * the rejection.
+ */
+export function nextCaseId(outcome, currentId, makeId) {
+  return !outcome.ok && outcome.kind === "rejected" ? makeId() : currentId;
 }
