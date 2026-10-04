@@ -59,13 +59,16 @@ remembers the choice).
   Telegram button.
 - `apiKey`: the API Gateway key, sent as `?key=<apiKey>` on the cases request.
   `null` (the default) sends no key; the local lir-agent API needs none.
-- `authToken`: a customer JWT, sent as `Authorization: Bearer <token>`. Sign-in
-  is mocked in this demo, so the token is issued outside this repo. `null`
-  sends no `Authorization` header.
+- `approvalsEndpoint`: the base URL of `/v1/approvals`, used by the approval card. The
+  default, `http://localhost:8080/v1/approvals`, is the local lir-agent API.
+- `authToken`: the customer JWT the gateway checks when customer sign-in is on
+  (`customer_sign_in` in lir-infra), sent as `Authorization: Bearer <token>`.
+  Sign-in is mocked in this demo, so the token is issued outside this repo.
+  `null` sends no `Authorization` header.
 
 ### Point the local page at the deployed Gateway
 
-`index.html` loads `js/config.local.js` before `js/config.js`, and its values
+`index.html` and `aprobar.html` load `js/config.local.js` before `js/config.js`, and its values
 win. The file is git-ignored; when it is missing the browser skips it (a 404 in
 the console) and the defaults apply.
 
@@ -76,10 +79,30 @@ terraform output                       # the API Gateway URL
 terraform output -raw cases_api_key    # the API key
 ```
 
-Put `https://<gateway-host>/v1/cases` in `casesEndpoint` and the key in
-`apiKey`, then serve the page on port 5500 as above: the deployed cases service
+Put `https://<gateway-host>/v1/cases` in `casesEndpoint`, the key in `apiKey`
+and `https://<gateway-host>/v1/approvals` in `approvalsEndpoint`, then serve the page on port 5500 as above: the deployed cases service
 only allows the `http://localhost:5500` origin. Never commit
 `js/config.local.js`; the key is a secret.
+
+## Approval card
+
+`aprobar.html` is where a customer approves or rejects an important action the bank
+would take on their behalf (opening a dispute today). Nothing runs without that approval.
+The lir-agent sends the customer a single-use link to it, by chat or Telegram button:
+`aprobar.html?id=APR-...&t=<token>`.
+
+- The page reads the request from `GET {approvalsEndpoint}/{id}` with the token in the
+  `X-Approval-Token` header, shows it (title and details, in the customer's language) and
+  sends the decision to `POST {approvalsEndpoint}/{id}/decision` with the `content_hash` of
+  the card it showed, so a decision always refers to that exact content.
+- The token is a credential: the page removes it from the address bar on load, sends no
+  `Referer`, and writes every value with `textContent`.
+- A spent, wrong or expired link, a request decided elsewhere and a network failure each get
+  their own message. Only a network failure can be retried.
+- Step-up: when the agent requires the bank's sign-in for approvals, the page sends the
+  customer's JWT (`authToken`) with every call, and a missing or someone else's sign-in gets
+  its own screen.
+- `js/core/approval.js` has no DOM access; `tests/approval.test.js` covers it.
 
 ## Backend contract
 
