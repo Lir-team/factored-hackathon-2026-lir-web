@@ -569,6 +569,7 @@ legend {
 
 .success:focus-visible {
   box-shadow: var(--focus-ring);
+  border-radius: var(--radius-surface);
 }
 
 .success__title {
