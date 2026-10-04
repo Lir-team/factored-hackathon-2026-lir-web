@@ -23,11 +23,18 @@ export async function submitCase(
     return { ok: true, mode: "demo", case_id: payload.case_id, folio: fallbackFolio, status: "received" };
   }
 
+  // The timeout covers the whole exchange, body included: a stalled body read
+  // must end in the same retryable "network" outcome as a stalled connection.
   const controller = typeof AbortController === "function" ? new AbortController() : null;
-  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
-  let response;
-  try {
-    response = await fetchImpl(endpoint, {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      controller?.abort();
+      reject(new Error("timeout"));
+    }, timeoutMs);
+  });
+  const exchange = async () => {
+    const response = await fetchImpl(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -38,13 +45,19 @@ export async function submitCase(
       body: JSON.stringify(payload),
       signal: controller?.signal,
     });
+    const body = await response.json().catch(() => null);
+    return { response, body };
+  };
+
+  let response;
+  let body;
+  try {
+    ({ response, body } = await Promise.race([exchange(), timeout]));
   } catch {
     return { ok: false, kind: "network" };
   } finally {
     clearTimeout(timer);
   }
-
-  const body = await response.json().catch(() => null);
 
   if (response.ok) {
     return {

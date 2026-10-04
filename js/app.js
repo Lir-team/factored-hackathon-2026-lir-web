@@ -187,8 +187,14 @@ async function onSubmit(event) {
   const payload = buildCasePayload(state, { customer, language: getLanguage(), uuid: () => view.caseId });
   view.sending = true;
   update();
-  const outcome = await submitCase(payload, { endpoint: window.LIR_CONFIG?.casesEndpoint ?? null });
-  view.sending = false;
+  let outcome;
+  try {
+    outcome = await submitCase(payload, { endpoint: window.LIR_CONFIG?.casesEndpoint ?? null });
+  } catch {
+    outcome = { ok: false, kind: "network" }; // never leave the form stuck in "Sending"
+  } finally {
+    view.sending = false;
+  }
 
   if (outcome.ok) {
     view.success = { payload, outcome };

@@ -83,3 +83,28 @@ test("a network error is reported so the form can offer a retry", async () => {
   const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl });
   assert.deepEqual(outcome, { ok: false, kind: "network" });
 });
+
+test("a 4xx without a JSON body is a rejection with no field errors", async () => {
+  const { impl } = fakeFetch({ status: 400 });
+  const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl });
+  assert.deepEqual(outcome, { ok: false, kind: "rejected", status: 400, errors: {} });
+});
+
+const never = () => new Promise(() => {});
+
+test("a request that never answers times out as a network failure", { timeout: 2000 }, async () => {
+  // Ignores the abort signal on purpose: the timeout must not depend on fetch honoring it.
+  const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: never, timeoutMs: 20 });
+  assert.deepEqual(outcome, { ok: false, kind: "network" });
+});
+
+test("a body that never arrives times out too, and the request is aborted", { timeout: 2000 }, async () => {
+  let signal;
+  const impl = async (url, init) => {
+    signal = init.signal;
+    return { ok: true, status: 202, json: never };
+  };
+  const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl, timeoutMs: 20 });
+  assert.deepEqual(outcome, { ok: false, kind: "network" });
+  assert.equal(signal.aborted, true);
+});
