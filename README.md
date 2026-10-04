@@ -73,6 +73,11 @@ odd/tasks/          feature task document
 
 ## Credits
 
+The QR code on the confirmation screen is drawn with
+[qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) by
+Kazuhiko Arase, vendored unchanged as `js/vendor/qrcode.js` (`js/dist/qrcode.js`
+at commit `64f5976`) under the MIT license (see `js/vendor/qrcode.LICENSE`).
+
 The visual direction follows Anthropic's `frontend-design` skill, kept
 under `.claude/skills/frontend-design/` and licensed under Apache-2.0 (see
 the `LICENSE.txt` next to it). The design decisions for this page are in

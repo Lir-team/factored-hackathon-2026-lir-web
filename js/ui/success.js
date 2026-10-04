@@ -1,5 +1,6 @@
 /* The confirmation state: stamped slip, folio, what happens next, technical view. */
 import { pubsubAttributesFor } from "../core/case-payload.js";
+import { qrSvgPath } from "../core/qr.js";
 import { t } from "../i18n/index.js";
 import { $ } from "./dom.js";
 import { cardList, cardName } from "./render.js";
@@ -47,6 +48,19 @@ function renderTelegramHandoff(url) {
   handoff.hidden = !url;
   if (url) link.href = url;
   else link.removeAttribute("href");
+
+  // The same link as a QR for scanning from a phone (CSS shows it on wide
+  // screens only). No vendored library or no fit: the button stands alone.
+  const qr = url ? qrSvgPath(url, globalThis.qrcode) : null;
+  $("#success-telegram-qr").hidden = !qr;
+  const code = $("#success-telegram-code");
+  code.setAttribute("aria-label", t("success.telegram.qr_alt"));
+  if (qr) {
+    code.setAttribute("viewBox", `0 0 ${qr.size} ${qr.size}`);
+    $("#success-telegram-path").setAttribute("d", qr.path);
+  } else {
+    $("#success-telegram-path").removeAttribute("d");
+  }
 }
 
 /** Stamp the slip once. CSS skips the motion under prefers-reduced-motion. */

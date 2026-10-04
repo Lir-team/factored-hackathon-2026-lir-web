@@ -619,6 +619,42 @@ legend {
   }
 }
 
+/* The QR only helps when the page is on a computer and the phone is at hand. */
+.handoff__qr {
+  display: none;
+}
+
+@media (min-width: 901px) {
+  .handoff {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-5) var(--space-6);
+  }
+
+  .handoff__qr:not([hidden]) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .handoff__code {
+    flex: none;
+    width: 8.5rem;
+    height: 8.5rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    fill: var(--ink);
+  }
+
+  .handoff__qr figcaption {
+    max-width: 22ch;
+    color: var(--slate);
+    font-size: var(--step--1);
+  }
+}
+
 .success__demo {
   margin-top: var(--space-5);
   color: var(--slate);

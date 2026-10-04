@@ -160,6 +160,8 @@ export default {
   "success.tech.attributes": "Atributos para Pub/Sub",
   "success.telegram.button": "Continuar en Telegram",
   "success.telegram.new_tab": "(se abre en una pestaña nueva)",
+  "success.telegram.qr_alt": "Código QR con el mismo enlace de Telegram que el botón Continuar en Telegram",
+  "success.telegram.qr_caption": "¿Estás en una computadora? Escanea este código con tu celular para abrir el mismo chat.",
   "success.again": "Reportar otro problema",
 
   "language.es": "Español",

@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/form.css" />
     <link rel="stylesheet" href="css/slip.css" />
     <script src="js/config.js"></script>
+    <script src="js/vendor/qrcode.js" defer></script>
     <script type="module" src="js/app.js"></script>
   </head>
   <body>
@@ -212,6 +213,19 @@
                 <span data-i18n="success.telegram.button">Continuar en Telegram</span>
                 <span class="visually-hidden" data-i18n="success.telegram.new_tab"></span>
               </a>
+              <figure class="handoff__qr" id="success-telegram-qr">
+                <svg
+                  class="handoff__code"
+                  id="success-telegram-code"
+                  role="img"
+                  data-i18n-aria-label="success.telegram.qr_alt"
+                  xmlns="http://www.w3.org/2000/svg"
+                  shape-rendering="crispEdges"
+                >
+                  <path id="success-telegram-path" />
+                </svg>
+                <figcaption data-i18n="success.telegram.qr_caption"></figcaption>
+              </figure>
             </div>
             <p class="success__demo" id="success-demo" data-i18n="success.demo" hidden></p>
             <details class="tech">
