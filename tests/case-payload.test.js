@@ -20,14 +20,14 @@ const ctx = (overrides = {}) => ({ customer, language: "es", now: NOW, uuid: () 
 function fraudState(overrides = {}) {
   return {
     category: "unrecognized_charge",
-    transaction_ids: ["TXN-20261003-88412", "TXN-20261003-88409"],
+    transaction_ids: ["TXN-D1-008", "TXN-D1-007"],
     card_last4: null,
     incident_occurred_at: "",
     incident_location: "",
     used_after: false,
     card_in_possession: "yes",
     shared_credentials: "no",
-    description: "  I did not make these two online purchases last night.  ",
+    description: "  I did not make these two purchases this week.  ",
     contact_channel: "whatsapp",
     contact_value: "+52 55 4123 8890",
     declaration: true,
@@ -92,7 +92,7 @@ test("unknown transaction ids are rejected", () => {
 
 test("single-transaction categories reject more than one charge", () => {
   const { errors } = validateCase(
-    simpleState("improper_fee", { transaction_ids: ["TXN-20261001-64018", "TXN-20260929-49311"] }),
+    simpleState("improper_fee", { transaction_ids: ["TXN-D1-005", "TXN-D1-006"] }),
     ctx(),
   );
   assert.equal(errors.transaction_ids, "too_many");
@@ -182,21 +182,21 @@ test("buildCasePayload produces the versioned case for an unrecognized charge", 
   assert.equal(payload.category, "unrecognized_charge");
   assert.equal(payload.intent_hint, "cargo_no_reconocido");
   assert.equal(payload.fraud_suspected, true);
-  assert.equal(payload.priority_hint, "critical", "foreign online charges");
+  assert.equal(payload.priority_hint, "critical", "a foreign charge");
   assert.deepEqual(payload.transactions, [
     {
-      transaction_id: "TXN-20261003-88412",
-      amount: 1560,
+      transaction_id: "TXN-D1-008",
+      amount: 38900,
       currency: "MXN",
-      merchant: "PAGSEGURO *LOJAONLINE",
-      occurred_at: "2026-10-03T03:12:44-06:00",
+      merchant: "ELECTRONICA DEL ESTE SRL",
+      occurred_at: "2026-06-13T03:22:00-06:00",
     },
     {
-      transaction_id: "TXN-20261003-88409",
-      amount: 3999,
+      transaction_id: "TXN-D1-007",
+      amount: 1299,
       currency: "MXN",
-      merchant: "SP DIGITALGOODS MADRID",
-      occurred_at: "2026-10-03T02:58:10-06:00",
+      merchant: "PAYPAL *STEAMGAMES",
+      occurred_at: "2026-06-12T11:05:00-06:00",
     },
   ]);
   assert.deepEqual(payload.cards, [{ last4: "7390", type: "credit" }], "both charges are on 7390");
@@ -207,13 +207,13 @@ test("buildCasePayload produces the versioned case for an unrecognized charge", 
     shared_credentials: "no",
   });
   assert.equal(payload.freeze_card_requested, true);
-  assert.equal(payload.description, "I did not make these two online purchases last night.");
+  assert.equal(payload.description, "I did not make these two purchases this week.");
   assert.equal(payload.consent, true);
 });
 
 test("unrecognized charges on two cards list both cards to freeze, once each, in statement order", () => {
   const payload = buildCasePayload(
-    fraudState({ transaction_ids: ["TXN-20261002-76980", "TXN-20261003-88412", "TXN-20261003-88409"] }),
+    fraudState({ transaction_ids: ["TXN-D1-005", "TXN-D1-008", "TXN-D1-007"] }),
     ctx(),
   );
   assert.deepEqual(payload.cards, [
@@ -231,7 +231,7 @@ test("a lost card carries the incident with an ISO timestamp and the picked card
       incident_location: "  Metro Insurgentes, CDMX ",
       shared_credentials: "unsure",
       card_in_possession: "yes", // ignored: the card is lost
-      transaction_ids: ["TXN-20261002-76980"], // ignored: used_after is false
+      transaction_ids: ["TXN-D1-005"], // ignored: used_after is false
       freeze_card_requested: true,
     }),
     ctx(),
@@ -250,7 +250,7 @@ test("a lost card carries the incident with an ISO timestamp and the picked card
 test("non-fraud categories drop fraud-only fields", () => {
   const payload = buildCasePayload(
     simpleState("app_issue", {
-      transaction_ids: ["TXN-20261002-77105"],
+      transaction_ids: ["TXN-D1-001"],
       freeze_card_requested: true,
       shared_credentials: "yes",
     }),
@@ -275,14 +275,14 @@ test("buildCasePayload refuses an invalid form", () => {
 test("priorityFor is a client-side hint", () => {
   const txn = (id) => customer.transactions.find((t) => t.transaction_id === id);
   assert.equal(priorityFor("card_lost_stolen", [], customer), "critical");
-  assert.equal(priorityFor("unrecognized_charge", [txn("TXN-20261002-77105")], customer), "high");
-  const bigDomestic = { ...txn("TXN-20261002-77105"), amount: 25000 };
+  assert.equal(priorityFor("unrecognized_charge", [txn("TXN-D1-001")], customer), "high");
+  const bigDomestic = { ...txn("TXN-D1-001"), amount: 25000 };
   assert.equal(priorityFor("unrecognized_charge", [bigDomestic], customer), "critical");
-  assert.equal(priorityFor("unrecognized_charge", [txn("TXN-20261003-88412")], customer), "critical");
-  assert.equal(priorityFor("improper_fee", [txn("TXN-20261001-64018")], customer), "medium");
+  assert.equal(priorityFor("unrecognized_charge", [txn("TXN-D1-008")], customer), "critical");
+  assert.equal(priorityFor("improper_fee", [txn("TXN-D1-006")], customer), "medium");
   assert.equal(priorityFor("app_issue", [], customer), "medium");
   assert.equal(priorityFor("service_complaint", [], customer), "medium");
-  assert.equal(priorityFor("transaction_inquiry", [txn("TXN-20261002-77105")], customer), "low");
+  assert.equal(priorityFor("transaction_inquiry", [txn("TXN-D1-001")], customer), "low");
   assert.equal(priorityFor("other_request", [], customer), "low");
 });
 
