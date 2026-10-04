@@ -132,13 +132,20 @@ Parent screenshot check, then decide the PR strategy (the branch is about
 - One lens (reliability): **approved**. Acknowledged; authority burned
   (lineage `review-99909d18f79f5a7a`).
 - Advisory follow-ups (informational, not blocking):
-  - [ ] R3-silent-rejection (`js/app.js:203-207`): a 4xx whose error keys are
-    all unknown shows no message. Fall back to `send.rejected`.
-  - [ ] R3-idempotency-after-422 (`js/app.js:187`): rotate `case_id` after a
-    rejection, or limit replay to successful responses in the contract.
-  - [ ] R3-freeze-first-card-only (`js/core/case-rules.js:124-126`): fraud
-    charges on two cards freeze only the first.
-  - [ ] R3-timeout-not-covering-body (`js/core/submit.js:43-47`): a stalled
-    `response.json()` leaves the form stuck in "Sending".
-  - [ ] R3-submit-coverage-gaps (`js/core/submit.js:26-27`): add tests for the
-    timeout path and for a 4xx without an errors body.
+  - [x] R3-silent-rejection: `3993a64`. `partitionServerErrors` keeps the
+    fields the form can show; unknown keys or no `errors` add the generic
+    `send.rejected` line and focus the visible retry button. RED: missing
+    export; GREEN: `node --test tests/` 43/43.
+  - [x] R3-idempotency-after-422: `3993a64`. `nextCaseId` rotates `case_id`
+    after a 4xx and keeps it for network/5xx retries; the contract limits
+    replay to the same key and to 2xx responses. RED/GREEN with the above.
+  - [x] R3-freeze-first-card-only: `3f52276`. Payload `cards` array (unique,
+    statement order) replaces `card`; `schema_version` 1.1; alert, slip and
+    confirmation name every card. RED: 6 failing payload/schema tests;
+    GREEN: 44/44. Headless Firefox smoke render OK.
+  - [x] R3-timeout-not-covering-body: `1f77f9e`. The timeout races the whole
+    exchange (body included) and aborts it; `view.sending` resets in a
+    `finally`. RED: 2 tests cancelled (hang); GREEN: 40/40.
+  - [x] R3-submit-coverage-gaps: `1f77f9e`, `3993a64`. Tests for a fetch that
+    never answers, a body that never arrives, a 4xx without a body
+    (characterization, already green) and a 4xx with only unknown keys.
