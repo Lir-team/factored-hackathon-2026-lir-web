@@ -57,11 +57,32 @@ remembers the choice).
   points it at the API Gateway. Set it to `null` for demo mode: the page
   simulates the request and shows a reference number and the payload, with no
   Telegram button.
+- `apiKey`: the API Gateway key, sent as `?key=<apiKey>` on the cases request.
+  `null` (the default) sends no key; the local lir-agent API needs none.
 - `approvalsEndpoint`: the base URL of `/v1/approvals`, used by the approval card. The
   default, `http://localhost:8080/v1/approvals`, is the local lir-agent API.
-- `authToken`: the customer JWT the gateway checks, sent as
-  `Authorization: Bearer <token>`. Sign-in is mocked in this demo, so the token
-  is issued outside this repo. `null` sends no `Authorization` header.
+- `authToken`: the customer JWT the gateway checks when customer sign-in is on
+  (`customer_sign_in` in lir-infra), sent as `Authorization: Bearer <token>`.
+  Sign-in is mocked in this demo, so the token is issued outside this repo.
+  `null` sends no `Authorization` header.
+
+### Point the local page at the deployed Gateway
+
+`index.html` and `aprobar.html` load `js/config.local.js` before `js/config.js`, and its values
+win. The file is git-ignored; when it is missing the browser skips it (a 404 in
+the console) and the defaults apply.
+
+```sh
+cp js/config.local.example.js js/config.local.js
+# In lir-infra:
+terraform output                       # the API Gateway URL
+terraform output -raw cases_api_key    # the API key
+```
+
+Put `https://<gateway-host>/v1/cases` in `casesEndpoint`, the key in `apiKey`
+and `https://<gateway-host>/v1/approvals` in `approvalsEndpoint`, then serve the page on port 5500 as above: the deployed cases service
+only allows the `http://localhost:5500` origin. Never commit
+`js/config.local.js`; the key is a secret.
 
 ## Approval card
 
@@ -87,7 +108,7 @@ The lir-agent sends the customer a single-use link to it, by chat or Telegram bu
 
 The page sends a versioned JSON case to `POST /v1/cases` with an
 `Idempotency-Key`. The endpoint, error shape, Telegram Start link,
-category-to-intent mapping, the Cloud Storage hand-off to the agent and the
+category-to-intent mapping, the Pub/Sub hand-off to the agent and the
 CORS rules are in
 [`docs/case-contract.md`](docs/case-contract.md); the payload schema is
 [`schema/case.schema.json`](schema/case.schema.json).

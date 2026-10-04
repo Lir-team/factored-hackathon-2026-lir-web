@@ -30,9 +30,19 @@ export function telegramStartUrl(value) {
   return exact && !url.username && !url.password && !url.port ? url.href : null;
 }
 
+/**
+ * The endpoint with the API Gateway key as the `key` query parameter, or the
+ * endpoint unchanged when no key is configured. Works on relative URLs too.
+ */
+export function withApiKey(endpoint, apiKey) {
+  if (!apiKey) return endpoint;
+  const separator = endpoint.includes("?") ? "&" : "?";
+  return `${endpoint}${separator}key=${encodeURIComponent(apiKey)}`;
+}
+
 export async function submitCase(
   payload,
-  { endpoint = null, authToken = null, fetchImpl = globalThis.fetch, demoDelayMs = 900, timeoutMs = 15000 } = {},
+  { endpoint = null, authToken = null, apiKey = null, fetchImpl = globalThis.fetch, demoDelayMs = 900, timeoutMs = 15000 } = {},
 ) {
   const fallbackFolio = folioFor(payload.case_id, payload.submitted_at);
 
@@ -60,7 +70,7 @@ export async function submitCase(
   // The customer JWT that API Gateway checks; no token, no header.
   if (authToken) headers.Authorization = `Bearer ${authToken}`;
   const exchange = async () => {
-    const response = await fetchImpl(endpoint, {
+    const response = await fetchImpl(withApiKey(endpoint, apiKey), {
       method: "POST",
       headers,
       body: JSON.stringify(payload),

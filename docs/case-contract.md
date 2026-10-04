@@ -8,8 +8,8 @@ Gateway.
 - Payload schema: [`schema/case.schema.json`](../schema/case.schema.json)
   (JSON Schema 2020-12, `schema_version` `"1.1"`).
 - Payload builder: `buildCasePayload` in `js/core/case-payload.js`.
-- Case attributes (Cloud Storage object metadata): `pubsubAttributesFor` in
-  the same module.
+- Case attributes (Pub/Sub message attributes, and the archived object's
+  metadata): `pubsubAttributesFor` in the same module.
 
 ## Endpoint: `POST /v1/cases`
 
@@ -21,6 +21,10 @@ Request headers:
 | `Accept`          | `application/json`                                 |
 | `Idempotency-Key` | the payload's `case_id` (a client UUID v4)         |
 | `Authorization`   | `Bearer <customer JWT>`, only when `authToken` is set in `js/config.js` |
+
+Through API Gateway the request also carries the gateway's API key as the
+`key` query parameter (`POST /v1/cases?key=<apiKey>`), only when `apiKey` is
+set in the config. The local lir-agent API needs no key.
 
 The client keeps the same `case_id` when it retries after a network error, a
 timeout or a 5xx, so the backend must treat a repeated `Idempotency-Key` as
@@ -65,9 +69,14 @@ A full `202` body:
 }
 ```
 
-The backend must re-validate everything. In particular, it must check that
-`customer.customer_id` matches the customer in the JWT and that every
-`transaction_id` belongs to that customer.
+The backend must re-validate everything. In particular, it checks that every
+`transaction_id` belongs to the customer and, when it requires a customer
+identity (`REQUIRE_IDENTITY=true`), that `customer.customer_id` matches the
+customer in the JWT. Customer sign-in is a lir-infra toggle (`customer_sign_in`,
+off by default). Off, the cases service runs with `REQUIRE_IDENTITY=false`: it
+trusts the payload's `customer_id`, and the API key is what keeps strangers out.
+On, the gateway also requires the customer JWT on `POST /v1/cases` and on the
+approval routes, and the service runs with `REQUIRE_IDENTITY=true`.
 
 ## Telegram Start link
 
@@ -124,17 +133,20 @@ should map `en` to `es` (or reply in English if the agent learns it).
 
 ## Handing the case to the agent
 
-The backend does not publish to Pub/Sub directly. It stores each accepted case
-in Cloud Storage, and the bucket notification carries it to the agent:
+The backend publishes each accepted case to Pub/Sub itself. There is no Cloud
+Storage bucket notification:
 
-1. After the payload passes the schema, write it to the `cases-inbox` bucket
-   (the payload JSON, UTF-8, unchanged), then answer `202`.
-2. The bucket's notification publishes an `OBJECT_FINALIZE` message to
-   Pub/Sub.
-3. A push subscription delivers it to the agent, which reads the object.
+1. After the payload passes validation, the backend archives it in the cases
+   inbox bucket as `cases/<case_id>.json` (the payload JSON, unchanged), with
+   the case attributes as the object's custom metadata. The archive is a
+   record only; nothing is triggered by it.
+2. It publishes the payload JSON to the Pub/Sub topic `lir-cases`, with the
+   case attributes as message attributes and the ordering key
+   `customer.customer_id`, so one customer's cases arrive in order.
+3. It answers `202`. A push subscription then delivers the message to the
+   agent, which works the case straight from the message.
 
-The case attributes travel as the object's custom metadata,
-`pubsubAttributesFor(payload)`, all strings:
+The case attributes, `pubsubAttributesFor(payload)`, are all strings:
 
   ```json
   {
@@ -148,20 +160,20 @@ The case attributes travel as the object's custom metadata,
   }
   ```
 
-With the `JSON_API_V1` payload format, the notification's message data is the
-object resource, metadata included, so the agent can route on these values
-before it downloads the payload; for example, fraud cases have
-`fraud_suspected` = `"true"`.
+They let a subscriber route on the case without parsing the payload; for
+example, fraud cases have `fraud_suspected` = `"true"`.
 
 ## CORS and API Gateway
 
 - `casesEndpoint` is the API Gateway URL of `POST /v1/cases`, on another
   origin than the page, so every request is cross-origin.
-- `Idempotency-Key` and `Authorization` make the request non-simple, so the
-  browser sends an `OPTIONS` preflight first, without credentials. The gateway
-  (or the backend behind it) must answer that preflight without requiring the
-  JWT.
-- Allow only the page's origin, the `POST` method, and the `Content-Type`,
-  `Idempotency-Key` and `Authorization` headers.
-- The gateway checks the customer JWT; the backend still checks that
+- `Content-Type: application/json` and `Idempotency-Key` make the request
+  non-simple, so the browser sends an `OPTIONS` preflight first, without
+  credentials and without the API key. The gateway passes the preflight
+  through to the cases service, which answers it from `CORS_ORIGINS`.
+- Allow only the page's origin (`http://localhost:5500` for the local page),
+  the `POST` method, and the `Content-Type`, `Idempotency-Key` and
+  `Authorization` headers.
+- The gateway checks the API key on `POST /v1/cases`. When customer sign-in
+  is enabled it also checks the customer JWT, and the backend checks that
   `customer.customer_id` matches the JWT's customer.

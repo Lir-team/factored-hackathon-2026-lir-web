@@ -226,3 +226,23 @@ test("without an authToken no Authorization header is sent", async () => {
     assert.equal("Authorization" in calls[0].init.headers, false, String(authToken));
   }
 });
+
+test("a configured apiKey is sent as the key query parameter", async () => {
+  const { impl, calls } = liveAccepted({});
+  await submitCase(payload, { endpoint: "https://gw.example/v1/cases", fetchImpl: impl, apiKey: "AIza a&b" });
+  assert.equal(calls[0].url, "https://gw.example/v1/cases?key=AIza%20a%26b");
+});
+
+test("the key is appended after an existing query string", async () => {
+  const { impl, calls } = liveAccepted({});
+  await submitCase(payload, { endpoint: "/v1/cases?debug=1", fetchImpl: impl, apiKey: "k1" });
+  assert.equal(calls[0].url, "/v1/cases?debug=1&key=k1");
+});
+
+test("without an apiKey the endpoint is called unchanged", async () => {
+  for (const apiKey of [undefined, null, ""]) {
+    const { impl, calls } = liveAccepted({});
+    await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl, apiKey });
+    assert.equal(calls[0].url, "/v1/cases", String(apiKey));
+  }
+});
