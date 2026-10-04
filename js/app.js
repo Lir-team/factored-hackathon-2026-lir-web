@@ -191,7 +191,10 @@ async function onSubmit(event) {
   update();
   let outcome;
   try {
-    outcome = await submitCase(payload, { endpoint: window.LIR_CONFIG?.casesEndpoint ?? null });
+    outcome = await submitCase(payload, {
+      endpoint: window.LIR_CONFIG?.casesEndpoint ?? null,
+      authToken: window.LIR_CONFIG?.authToken ?? null,
+    });
   } catch {
     outcome = { ok: false, kind: "network" }; // never leave the form stuck in "Sending"
   } finally {

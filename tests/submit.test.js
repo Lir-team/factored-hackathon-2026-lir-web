@@ -35,6 +35,7 @@ test("demo mode answers with a folio without calling fetch", async () => {
     case_id: payload.case_id,
     folio: "LB-2026-3F2A9C",
     status: "received",
+    telegram_start_url: null,
   });
   assert.equal(calls.length, 0);
 });
@@ -56,6 +57,7 @@ test("a configured endpoint gets a JSON POST with an Idempotency-Key", async () 
     case_id: payload.case_id,
     folio: "LB-2026-SERVER",
     status: "received",
+    telegram_start_url: null,
   });
 });
 
@@ -137,4 +139,69 @@ test("nextCaseId rotates the Idempotency-Key only after a rejection", () => {
   assert.equal(nextCaseId({ ok: false, kind: "network" }, "old-id", makeId), "old-id");
   assert.equal(nextCaseId({ ok: false, kind: "server", status: 503 }, "old-id", makeId), "old-id");
   assert.equal(nextCaseId({ ok: true, mode: "live" }, "old-id", makeId), "old-id");
+});
+
+const START_URL = "https://t.me/lir_bank_bot?start=c2luZ2xlLXVzZS10b2tlbg";
+
+function liveAccepted(extra) {
+  return fakeFetch({
+    status: 202,
+    body: { case_id: payload.case_id, folio: "LB-2026-SERVER", status: "received", ...extra },
+  });
+}
+
+test("a 202 with a t.me Start link passes it through unchanged", async () => {
+  const { impl } = liveAccepted({ telegram_start_url: START_URL });
+  const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl });
+  assert.equal(outcome.telegram_start_url, START_URL);
+});
+
+test("a 202 without a Start link yields telegram_start_url null", async () => {
+  for (const extra of [{}, { telegram_start_url: null }]) {
+    const { impl } = liveAccepted(extra);
+    const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl });
+    assert.equal(outcome.telegram_start_url, null);
+  }
+  const { impl } = fakeFetch({ status: 202 });
+  const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl });
+  assert.equal(outcome.telegram_start_url, null);
+});
+
+test("a Start link that is not https://t.me/ is dropped", async () => {
+  const hostile = [
+    "http://t.me/lir_bank_bot?start=abc",
+    "https://evil.com/lir_bank_bot?start=abc",
+    "https://t.me.evil.com/lir_bank_bot?start=abc",
+    "https://evil.com/?u=https://t.me/x",
+    "https://user@evil.com/t.me/",
+    "javascript:alert(1)//https://t.me/",
+    "//t.me/lir_bank_bot",
+    "not a url",
+    42,
+    { href: START_URL },
+  ];
+  for (const telegram_start_url of hostile) {
+    const { impl } = liveAccepted({ telegram_start_url });
+    const outcome = await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl });
+    assert.equal(outcome.telegram_start_url, null, String(telegram_start_url));
+  }
+});
+
+test("demo mode never offers a Start link", async () => {
+  const outcome = await submitCase(payload, { endpoint: null, demoDelayMs: 0 });
+  assert.equal(outcome.telegram_start_url, null);
+});
+
+test("a configured authToken is sent as a Bearer Authorization header", async () => {
+  const { impl, calls } = liveAccepted({});
+  await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl, authToken: "jwt.value.sig" });
+  assert.equal(calls[0].init.headers.Authorization, "Bearer jwt.value.sig");
+});
+
+test("without an authToken no Authorization header is sent", async () => {
+  for (const authToken of [undefined, null, ""]) {
+    const { impl, calls } = liveAccepted({});
+    await submitCase(payload, { endpoint: "/v1/cases", fetchImpl: impl, authToken });
+    assert.equal("Authorization" in calls[0].init.headers, false, String(authToken));
+  }
 });
