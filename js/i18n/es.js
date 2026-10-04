@@ -167,4 +167,23 @@ export default {
   "language.es": "Español",
   "language.pt": "Português",
   "language.en": "English",
+
+  // Approval card (aprobar.html)
+  "approval.doc.title": "LATAM Bank: aprobar una solicitud",
+  "approval.page.title": "Tu aprobación",
+  "approval.page.lede": "El banco no hace nada de esto sin que lo apruebes.",
+  "approval.loading": "Cargando la solicitud…",
+  "approval.approve": "Aprobar",
+  "approval.reject": "Rechazar",
+  "approval.note": "Si no reconoces esta solicitud, recházala. Nunca te pediremos claves ni códigos.",
+  "approval.expires": "Puedes decidir hasta el {time}",
+  "approval.done.approved": "Aprobaste la solicitud.",
+  "approval.done.dispute": "Aprobaste la disputa: quedó abierta con el número {id}.",
+  "approval.done.rejected": "Rechazaste la solicitud: no se hizo nada.",
+  "approval.error.not_found": "Este enlace no es válido o ya se usó. Si necesitas algo, escríbenos en el chat.",
+  "approval.error.expired": "Esta solicitud venció. Pídela de nuevo en el chat.",
+  "approval.error.decided": "Esta solicitud ya fue decidida.",
+  "approval.error.changed": "La solicitud cambió desde que la abriste. Vuelve a abrir el enlace.",
+  "approval.error.server": "No pudimos registrar tu decisión. Intenta en unos minutos.",
+  "approval.error.network": "No hay conexión con el banco. Revisa tu internet e intenta de nuevo.",
 };

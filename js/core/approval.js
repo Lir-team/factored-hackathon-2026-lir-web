@@ -1,0 +1,112 @@
+/*
+ * Approval card logic (human in the loop): read the link, load the request, send the
+ * decision. No DOM access: the caller passes the endpoint (window.LIR_CONFIG) and fetch.
+ *
+ * The bank shows an important action (e.g. opening a dispute) and only the customer's
+ * approval runs it. The link carries a single-use token: it identifies the customer for
+ * this one request and stops working after the decision.
+ *
+ * Outcomes:
+ *   { ok: true, card }                      card: the request as the API returns it
+ *   { ok: false, kind }                     kind: "not_found" | "expired" | "decided" |
+ *                                                  "changed" | "server" | "network"
+ */
+
+const ERRORS_BY_DETAIL = Object.freeze({
+  not_found: "not_found",
+  expired: "expired",
+  not_pending: "decided",
+  content_changed: "changed",
+});
+
+/** The request id and token from the page URL (`?id=APR-...&t=...`), or null. */
+export function approvalParams(search) {
+  const params = new URLSearchParams(search);
+  const id = params.get("id");
+  const token = params.get("t");
+  if (!id || !token || !/^APR-[A-Z0-9]+$/.test(id)) return null;
+  return { id, token };
+}
+
+async function request(url, init, fetchImpl, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetchImpl(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function outcome(response) {
+  if (response.ok) return { ok: true, card: await response.json() };
+  let detail = null;
+  try {
+    detail = (await response.json())?.detail ?? null;
+  } catch {
+    // An error without a JSON body: classified by status below.
+  }
+  const kind =
+    ERRORS_BY_DETAIL[detail] ??
+    (response.status === 404 ? "not_found" : response.status === 410 ? "expired" : "server");
+  return { ok: false, kind, status: response.status };
+}
+
+/** Load the card behind the link. */
+export async function loadApproval(
+  endpoint,
+  { id, token },
+  { fetchImpl = globalThis.fetch, timeoutMs = 15000 } = {},
+) {
+  // The token is a credential: in a header, so no proxy or gateway logs it with the URL.
+  const init = { method: "GET", headers: { "X-Approval-Token": token } };
+  try {
+    return await outcome(
+      await request(`${endpoint}/${encodeURIComponent(id)}`, init, fetchImpl, timeoutMs),
+    );
+  } catch {
+    return { ok: false, kind: "network" };
+  }
+}
+
+/**
+ * Send the customer's decision on the card they saw. `content_hash` binds the decision to
+ * that exact content: if the request changed, the API refuses it ("changed").
+ */
+export async function decideApproval(
+  endpoint,
+  { id, token },
+  card,
+  approve,
+  { fetchImpl = globalThis.fetch, timeoutMs = 15000 } = {},
+) {
+  const body = {
+    decision: approve ? "approve" : "reject",
+    token,
+    content_hash: card.content_hash,
+  };
+  try {
+    const response = await request(
+      `${endpoint}/${encodeURIComponent(id)}/decision`,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
+      fetchImpl,
+      timeoutMs,
+    );
+    return await outcome(response);
+  } catch {
+    return { ok: false, kind: "network" };
+  }
+}
+
+/** The i18n key and values that describe a card's state for the customer. */
+export function statusMessage(card) {
+  if (card.status === "approved") {
+    const dispute = card.result?.dispute_case_id;
+    return dispute
+      ? { key: "approval.done.dispute", vars: { id: dispute } }
+      : { key: "approval.done.approved", vars: {} };
+  }
+  if (card.status === "rejected") return { key: "approval.done.rejected", vars: {} };
+  if (card.status === "expired") return { key: "approval.error.expired", vars: {} };
+  return null; // pending: the buttons speak for themselves
+}

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- The link carries a single-use token: never send it to another site as a referrer. -->
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" href="data:," />
+    <title>LATAM Bank: aprobar una solicitud</title>
+    <meta name="description" content="Approve or reject an action the bank will take on your behalf." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600..700&display=swap"
+    />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/form.css" />
+    <link rel="stylesheet" href="css/slip.css" />
+    <link rel="stylesheet" href="css/approval.css" />
+    <script src="js/config.js"></script>
+    <script type="module" src="js/approve.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar__inner">
+        <a class="wordmark" href="./">LATAM Bank</a>
+      </div>
+    </header>
+
+    <main id="main" class="page approval-page" tabindex="-1">
+      <div class="page-head">
+        <h1 data-i18n="approval.page.title">Tu aprobación</h1>
+        <p data-i18n="approval.page.lede">El banco no hace nada de esto sin que lo apruebes.</p>
+      </div>
+
+      <p class="approval-loading" id="approval-loading" data-i18n="approval.loading">Cargando la solicitud…</p>
+
+      <article class="slip approval" id="approval" aria-labelledby="approval-title" hidden>
+        <p class="slip__brand">LATAM Bank</p>
+        <h2 class="approval__title" id="approval-title"></h2>
+        <dl class="approval__details" id="approval-details"></dl>
+        <p class="approval__expires" id="approval-expires"></p>
+
+        <div class="approval__actions" id="approval-actions">
+          <button class="button button--primary" type="button" id="approve" data-i18n="approval.approve">Aprobar</button>
+          <button class="button button--secondary" type="button" id="reject" data-i18n="approval.reject">Rechazar</button>
+        </div>
+        <p class="approval__note" data-i18n="approval.note"></p>
+      </article>
+
+      <p class="approval-status" id="approval-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+    </main>
+
+    <footer class="site-footer">
+      <p data-i18n="footer"></p>
+    </footer>
+  </body>
+</html>
