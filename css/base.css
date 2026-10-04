@@ -1,0 +1,291 @@
+/* Reset, typography and page layout. Component styles live in form.css and slip.css. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--mist);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: var(--lh-head);
+  font-weight: 650;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--step-4);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+h2 {
+  font-size: var(--step-2);
+}
+
+h3 {
+  font-size: var(--step-1);
+}
+
+p {
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--ink);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid transparent; /* keeps a ring in forced-colors mode */
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-control);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -4rem;
+  z-index: 10;
+  padding: var(--space-2) var(--space-4);
+  background: var(--paper);
+  border-radius: var(--radius-control);
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+}
+
+/* Top bar */
+
+.topbar {
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+}
+
+.topbar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  max-width: 76rem;
+  margin-inline: auto;
+  padding: var(--space-3) var(--space-5);
+}
+
+.wordmark {
+  margin-right: auto;
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.lang-switch {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+}
+
+.lang-switch button {
+  min-width: 2.75rem;
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: var(--slate);
+}
+
+.lang-switch button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.lang-switch button:focus-visible {
+  border-radius: var(--radius-pill);
+}
+
+.customer {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.customer__name {
+  font-weight: 700;
+}
+
+.customer__id {
+  font-size: var(--step--1);
+  color: var(--slate);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Page */
+
+.page {
+  max-width: 76rem;
+  margin-inline: auto;
+  padding: var(--space-7) var(--space-5) var(--space-8);
+}
+
+.page-head {
+  max-width: var(--measure);
+  margin-bottom: var(--space-6);
+}
+
+.page-head p {
+  margin-top: var(--space-3);
+  font-size: var(--step-1);
+  color: var(--slate);
+}
+
+/*
+ * Two columns on wide screens: the form (max 68ch) and a sticky slip.
+ * The submit row sits outside the form element (button[form]) so that,
+ * below 900px, the slip can land between the last step and the button.
+ */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, var(--measure)) minmax(16rem, 21rem);
+  grid-template-areas:
+    "form   slip"
+    "submit slip";
+  column-gap: clamp(var(--space-6), 5vw, var(--space-8));
+  align-items: start;
+}
+
+.layout__form {
+  grid-area: form;
+  min-width: 0;
+}
+
+.layout__slip {
+  grid-area: slip;
+  position: sticky;
+  top: var(--space-5);
+}
+
+.layout__submit {
+  grid-area: submit;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "form"
+      "slip"
+      "submit";
+  }
+
+  .layout__slip {
+    position: static;
+    margin-top: var(--space-6);
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: var(--space-6) var(--space-4) var(--space-7);
+  }
+
+  .topbar__inner {
+    padding-inline: var(--space-4);
+  }
+
+  h1 {
+    font-size: var(--step-3);
+  }
+}
+
+/* Footer */
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+}
+
+.site-footer p {
+  max-width: 76rem;
+  margin-inline: auto;
+  padding: var(--space-5);
+  font-size: var(--step--1);
+  color: var(--slate);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

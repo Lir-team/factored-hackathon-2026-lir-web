@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LATAM Bank: reportar un problema</title>
+    <meta name="description" content="Report a card or account problem to LATAM Bank and get a case reference." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600..700&display=swap"
+    />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/base.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Saltar al formulario</a>
+
+    <header class="topbar">
+      <div class="topbar__inner">
+        <a class="wordmark" href="./">LATAM Bank</a>
+
+        <div class="lang-switch" role="group" aria-label="Idioma">
+          <button type="button" data-lang="es" aria-pressed="true" lang="es">ES</button>
+          <button type="button" data-lang="pt" aria-pressed="false" lang="pt-BR">PT</button>
+          <button type="button" data-lang="en" aria-pressed="false" lang="en">EN</button>
+        </div>
+
+        <p class="customer">
+          <span class="customer__name" id="customer-name">Ana Gómez</span>
+          <span class="customer__id" id="customer-id">CLI-DEMO-001</span>
+        </p>
+      </div>
+    </header>
+
+    <main id="main" class="page" tabindex="-1">
+      <div class="page-head">
+        <h1>Reportar un problema</h1>
+        <p>Cuéntanos qué pasó. Abrimos tu caso en cuanto lo envíes.</p>
+      </div>
+
+      <div class="layout">
+        <div class="layout__form">
+          <form id="case-form" novalidate></form>
+        </div>
+
+        <aside class="layout__slip" aria-label="Comprobante del caso"></aside>
+
+        <div class="layout__submit"></div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        LATAM Bank es un banco ficticio del Factored AI &amp; Data Hackathon 2026. Esta página es una
+        demostración y no usa datos reales.
+      </p>
+    </footer>
+  </body>
+</html>

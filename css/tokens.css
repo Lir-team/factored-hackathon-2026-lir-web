@@ -1,0 +1,58 @@
+/*
+ * Design tokens for the LATAM Bank support page.
+ * Source of truth: docs/design-plan.md ("case slip" concept).
+ */
+:root {
+  /* Base palette */
+  --ink: #13293d;        /* text, wordmark, primary buttons */
+  --slate: #4e6173;      /* secondary text, field hints */
+  --mist: #e9eef1;       /* page background (cool, not cream) */
+  --paper: #ffffff;      /* form surface and the slip */
+  --marigold: #f2a900;   /* single accent: selection, slip stamp, focus */
+  --alert: #b3261e;      /* fraud severity, errors */
+
+  /* Supporting values */
+  --ok: #1e7a4c;
+  --rule: #cbd5dc;
+  --marigold-tint: #fff5d9; /* fill behind a selected row; ink text on top */
+  --alert-tint: #fbeceb;    /* fraud block surface */
+  --ink-hover: #1f3d59;
+
+  /* Type */
+  --font-display: "Bricolage Grotesque", "Avenir Next Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+
+  /* Scale: ratio 1.25, base 16px -> 12.8 / 16 / 20 / 25 / 31.25 / 39 */
+  --step--1: 0.8rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.5625rem;
+  --step-3: 1.953rem;
+  --step-4: 2.441rem;
+
+  --lh-body: 1.5;
+  --lh-head: 1.15;
+  --measure: 68ch;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* Radii follow hierarchy: controls are tight, surfaces are softer */
+  --radius-control: 4px;
+  --radius-surface: 10px;
+  --radius-pill: 999px;
+
+  /* Focus: an ink ring for contrast, marigold outside it for identity */
+  --focus-ring: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink), 0 0 0 7px var(--marigold);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
