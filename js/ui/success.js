@@ -1,5 +1,6 @@
 /* The confirmation state: stamped slip, folio, what happens next, technical view. */
 import { pubsubAttributesFor } from "../core/case-payload.js";
+import { telegramHandoff } from "../core/handoff.js";
 import { qrSvgPath } from "../core/qr.js";
 import { t } from "../i18n/index.js";
 import { $ } from "./dom.js";
@@ -8,14 +9,12 @@ import { cardList, cardName } from "./render.js";
 export function renderSuccess({ payload, outcome, customer }) {
   const contact = payload.customer.preferred_contact;
   $("#success-folio").textContent = outcome.folio;
-  // Telegram bots cannot write first: promise a Telegram message only when the
-  // backend returned a Start link for the customer to open.
-  const startUrl = outcome.telegram_start_url ?? null;
-  const unlinked = contact.channel === "telegram" && !startUrl;
+  const handoff = telegramHandoff({ channel: contact.channel, telegramStartUrl: outcome.telegram_start_url });
+  const unlinked = handoff.kind === "unlinked";
   $("#success-next-contact").textContent = unlinked
     ? t("success.next.contact.telegram_unlinked")
     : t(`success.next.contact.${contact.channel}`, { value: contact.value });
-  renderTelegramHandoff(contact.channel === "telegram" ? startUrl : null);
+  renderTelegramHandoff(handoff.kind === "linked" ? handoff.url : null);
 
   const cards = payload.cards
     .map((card) => customer.cards.find((c) => c.last4 === card.last4))
