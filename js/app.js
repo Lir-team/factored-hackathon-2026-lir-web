@@ -1,4 +1,4 @@
-/* Entry point: wires the form, the conditional steps and the live slip. */
+/* Entry point: wires the form, the conditional steps, the live slip and submission. */
 import { customer } from "./data/mock-customer.js";
 import {
   categoryRule,
@@ -7,8 +7,11 @@ import {
   stepsFor,
   transactionModeFor,
 } from "./core/case-rules.js";
+import { buildCasePayload, randomUUID, validateCase } from "./core/case-payload.js";
+import { submitCase } from "./core/submit.js";
 import { applyTranslations, getLanguage, getLocale, t } from "./i18n/index.js";
 import { $, $$ } from "./ui/dom.js";
+import { FIELD_ORDER, renderErrorSummary, renderFieldErrors } from "./ui/errors.js";
 import { readFormState } from "./ui/form-state.js";
 import {
   cardName,
@@ -19,15 +22,30 @@ import {
   renderStatement,
 } from "./ui/render.js";
 import { renderSlip } from "./ui/slip.js";
+import { renderSuccess, stampSlip } from "./ui/success.js";
 
 const form = $("#case-form");
-const view = { statementKey: null, receipt: null };
+const submitButton = $('button[type="submit"][form="case-form"]');
+
+const view = {
+  statementKey: null,
+  touched: new Set(), // fields that lost focus at least once
+  submitted: false, // after the first submit attempt every error shows
+  serverErrors: {}, // field errors returned by the backend
+  sendError: null, // { kind, status } of the last failed send
+  sending: false,
+  caseId: randomUUID(), // stable across retries: it is the Idempotency-Key
+  success: null, // { payload, outcome }
+};
 
 function context() {
-  return { customer, language: getLanguage(), locale: getLocale(), receipt: view.receipt };
+  const receipt = view.success
+    ? { folio: view.success.outcome.folio, submitted_at: view.success.payload.submitted_at }
+    : null;
+  return { customer, language: getLanguage(), locale: getLocale(), receipt };
 }
 
-/** Re-render every option list from the current answers (init and language change). */
+/** Re-render every option list from the current answers (init, reset and language change). */
 function renderOptions(state) {
   renderCategories($("#category-options"), state.category);
   renderCards($("#card-options"), customer.cards, state.card_last4);
@@ -72,7 +90,6 @@ function applySteps(state) {
   for (const el of $$("[data-only]", form)) {
     el.hidden = !el.dataset.only.split(" ").includes(state.category);
   }
-  $("#submit-row").hidden = !state.category;
 }
 
 function applyFraudAlert(state) {
@@ -101,14 +118,105 @@ function applyCounter(state) {
   $("#description-count").textContent = t("description.count", { n: state.description.length });
 }
 
+/** Client errors for touched fields (all after a submit attempt), plus server errors. */
+function applyErrors(state) {
+  const { errors } = validateCase(state, { customer, now: new Date() });
+  const merged = { ...view.serverErrors, ...errors };
+  const shown = new Set(view.submitted ? FIELD_ORDER : view.touched);
+  for (const field of Object.keys(view.serverErrors)) shown.add(field);
+  renderFieldErrors(merged, shown);
+  const summaryErrors = Object.fromEntries(Object.entries(merged).filter(([field]) => shown.has(field)));
+  renderErrorSummary(summaryErrors, { visible: view.submitted });
+}
+
+function applySubmitRow(state) {
+  $("#submit-row").hidden = !state.category || Boolean(view.success);
+  submitButton.textContent = view.sending ? t("submit.sending") : t("submit.button");
+  submitButton.setAttribute("aria-busy", String(view.sending));
+  const sendError = $("#send-error");
+  sendError.hidden = !view.sendError;
+  if (view.sendError) {
+    const { kind, status } = view.sendError;
+    $("#send-error-text").textContent = t(`send.${kind}`, { status });
+  }
+}
+
+function applySuccess() {
+  form.hidden = Boolean(view.success);
+  $("#success").hidden = !view.success;
+  if (view.success) renderSuccess({ ...view.success, customer });
+}
+
 function update() {
   syncStatement(readFormState(form));
   const state = readFormState(form);
   applySteps(state);
   applyFraudAlert(state);
   applyCounter(state);
+  applyErrors(state);
+  applySubmitRow(state);
+  applySuccess();
   renderSlip(state, context());
   return state;
+}
+
+async function onSubmit(event) {
+  event.preventDefault();
+  if (view.sending || view.success) return;
+
+  const state = readFormState(form);
+  view.submitted = true;
+  view.serverErrors = {};
+  view.sendError = null;
+  const { valid } = validateCase(state, { customer, now: new Date() });
+  if (!valid) {
+    update();
+    $("#error-summary").focus();
+    return;
+  }
+
+  const payload = buildCasePayload(state, { customer, language: getLanguage(), uuid: () => view.caseId });
+  view.sending = true;
+  update();
+  const outcome = await submitCase(payload, { endpoint: window.LIR_CONFIG?.casesEndpoint ?? null });
+  view.sending = false;
+
+  if (outcome.ok) {
+    view.success = { payload, outcome };
+    update();
+    stampSlip(true);
+    const success = $("#success");
+    success.focus();
+    success.scrollIntoView({ block: "start" });
+    return;
+  }
+
+  if (outcome.kind === "rejected" && Object.keys(outcome.errors).length > 0) {
+    view.serverErrors = outcome.errors;
+    update();
+    $("#error-summary").focus();
+    return;
+  }
+  view.sendError = { kind: outcome.kind, status: outcome.status };
+  update();
+  $("#retry").focus();
+}
+
+function resetForm() {
+  form.reset();
+  Object.assign(view, {
+    touched: new Set(),
+    submitted: false,
+    serverErrors: {},
+    sendError: null,
+    caseId: randomUUID(),
+    success: null,
+  });
+  stampSlip(false);
+  renderOptions({ contact_channel: "whatsapp" });
+  applyContact("whatsapp", { prefill: true });
+  update();
+  $("#category-options input")?.focus();
 }
 
 function init() {
@@ -122,11 +230,25 @@ function init() {
   renderOptions({ category: categoryRule(reason) ? reason : null, contact_channel: "whatsapp" });
   applyContact("whatsapp", { prefill: true });
 
-  form.addEventListener("input", update);
+  form.addEventListener("input", (event) => {
+    delete view.serverErrors[event.target.name];
+    update();
+  });
   form.addEventListener("change", (event) => {
     if (event.target.name === "contact_channel") applyContact(event.target.value, { prefill: true });
     update();
   });
+  form.addEventListener("focusout", (event) => {
+    const name = event.target.name;
+    if (!name || !FIELD_ORDER.includes(name)) return;
+    // Radio and checkbox groups count as touched only when focus leaves the group.
+    if (event.relatedTarget?.name === name) return;
+    view.touched.add(name);
+    update();
+  });
+  form.addEventListener("submit", onSubmit);
+  $("#retry").addEventListener("click", () => form.requestSubmit());
+  $("#report-another").addEventListener("click", resetForm);
   update();
 }
 

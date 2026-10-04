@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/form.css" />
     <link rel="stylesheet" href="css/slip.css" />
+    <script src="js/config.js"></script>
     <script type="module" src="js/app.js"></script>
   </head>
   <body>
@@ -45,6 +46,11 @@
 
       <div class="layout">
         <div class="layout__form">
+          <div class="error-summary" id="error-summary" tabindex="-1" aria-labelledby="error-summary-title" hidden>
+            <h2 class="error-summary__title" id="error-summary-title" data-i18n="errors.title"></h2>
+            <ul class="error-summary__list" id="error-summary-list"></ul>
+          </div>
+
           <form id="case-form" class="case-form" novalidate>
             <fieldset class="step" data-step="reason">
               <legend>
@@ -53,6 +59,7 @@
                   <span data-i18n="step.reason.title">¿Qué pasó?</span>
                 </h2>
               </legend>
+              <p class="field__error" id="error-category" hidden></p>
               <div class="choice-list" id="category-options"></div>
             </fieldset>
 
@@ -72,14 +79,16 @@
                 <span class="step__num">2</span>
                 <span data-i18n="step.card.title">¿Qué tarjeta y cuándo pasó?</span>
               </h2>
-              <fieldset class="field">
+              <fieldset class="field" id="card-field">
                 <legend class="field__label" data-i18n="card.legend">Tarjeta</legend>
+                <p class="field__error" id="error-card_last4" hidden></p>
                 <div class="choice-list choice-list--compact" id="card-options"></div>
               </fieldset>
               <div class="field-row">
-                <div class="field">
+                <div class="field" id="incident-occurred-at-field">
                   <label class="field__label" for="incident-occurred-at" data-i18n="incident.when">Cuándo pasó</label>
                   <p class="field__hint" id="incident-occurred-at-hint" data-i18n="incident.when_hint"></p>
+                  <p class="field__error" id="error-incident_occurred_at" hidden></p>
                   <input
                     class="input"
                     type="datetime-local"
@@ -113,10 +122,13 @@
                 <span class="step__num">2</span>
                 <span id="charges-title"></span>
               </h2>
+              <div id="charges-field">
+              <p class="field__error" id="error-transaction_ids" hidden></p>
               <fieldset class="statement" aria-describedby="charges-hint">
                 <legend class="field__hint" id="charges-hint"></legend>
                 <ul class="statement__rows" id="statement-rows"></ul>
               </fieldset>
+              </div>
             </section>
 
             <section class="step" data-step="details" aria-labelledby="step-details-title" hidden>
@@ -124,9 +136,10 @@
                 <span class="step__num">3</span>
                 <span data-i18n="step.details.title">Cuéntanos más</span>
               </h2>
-              <div class="field">
+              <div class="field" id="description-field">
                 <label class="field__label" for="description" data-i18n="description.label">Qué pasó, con tus palabras</label>
                 <p class="field__hint" id="description-hint" data-i18n="description.hint"></p>
+                <p class="field__error" id="error-description" hidden></p>
                 <textarea
                   class="input input--area"
                   id="description"
@@ -138,14 +151,16 @@
                 <p class="field__counter" id="description-count"></p>
               </div>
 
-              <fieldset class="field" data-only="unrecognized_charge">
+              <fieldset class="field" id="possession-field" data-only="unrecognized_charge">
                 <legend class="field__label" data-i18n="possession.legend">¿Todavía tienes la tarjeta contigo?</legend>
+                <p class="field__error" id="error-card_in_possession" hidden></p>
                 <div class="answers" data-answers="card_in_possession"></div>
               </fieldset>
 
-              <fieldset class="field" data-only="unrecognized_charge card_lost_stolen" aria-describedby="credentials-hint">
+              <fieldset class="field" id="credentials-field" data-only="unrecognized_charge card_lost_stolen" aria-describedby="credentials-hint">
                 <legend class="field__label" data-i18n="credentials.legend"></legend>
                 <p class="field__hint" id="credentials-hint" data-i18n="credentials.hint"></p>
+                <p class="field__error" id="error-shared_credentials" hidden></p>
                 <div class="answers" data-answers="shared_credentials"></div>
               </fieldset>
             </section>
@@ -155,20 +170,50 @@
                 <span class="step__num">4</span>
                 <span data-i18n="step.contact.title">¿Cómo te contactamos?</span>
               </h2>
-              <fieldset class="field">
+              <fieldset class="field" id="channel-field">
                 <legend class="field__label" data-i18n="contact.legend">Canal preferido</legend>
+                <p class="field__error" id="error-contact_channel" hidden></p>
                 <div class="segmented" id="contact-channels"></div>
               </fieldset>
-              <div class="field">
+              <div class="field" id="contact-value-field">
                 <label class="field__label" for="contact-value" id="contact-value-label"></label>
+                <p class="field__error" id="error-contact_value" hidden></p>
                 <input class="input" type="text" id="contact-value" name="contact_value" maxlength="120" />
               </div>
-              <label class="check">
-                <input type="checkbox" name="declaration" id="declaration" />
-                <span data-i18n="declaration"></span>
-              </label>
+              <div class="field" id="declaration-field">
+                <p class="field__error" id="error-declaration" hidden></p>
+                <label class="check">
+                  <input type="checkbox" name="declaration" id="declaration" />
+                  <span data-i18n="declaration"></span>
+                </label>
+              </div>
             </section>
           </form>
+
+          <section class="success" id="success" tabindex="-1" aria-labelledby="success-title" hidden>
+            <h2 class="success__title" id="success-title" data-i18n="success.title">Reporte enviado</h2>
+            <p class="success__folio">
+              <span data-i18n="success.folio"></span>
+              <strong id="success-folio"></strong>
+            </p>
+            <h3 data-i18n="success.next.title"></h3>
+            <ul class="success__next">
+              <li id="success-next-contact"></li>
+              <li id="success-next-freeze"></li>
+              <li id="success-next-outcome"></li>
+            </ul>
+            <p class="success__demo" id="success-demo" data-i18n="success.demo" hidden></p>
+            <details class="tech">
+              <summary data-i18n="success.tech.summary">Vista técnica</summary>
+              <h4 data-i18n="success.tech.payload"></h4>
+              <pre><code id="tech-payload"></code></pre>
+              <h4 data-i18n="success.tech.attributes"></h4>
+              <pre><code id="tech-attributes"></code></pre>
+            </details>
+            <button class="button button--secondary" type="button" id="report-another" data-i18n="success.again">
+              Reportar otro problema
+            </button>
+          </section>
         </div>
 
         <aside class="layout__slip" aria-label="Comprobante del caso" data-i18n-aria-label="slip.label">
@@ -228,6 +273,12 @@
             Enviar reporte
           </button>
           <p class="submit-note" data-i18n="submit.note"></p>
+          <div class="send-error" id="send-error" role="alert" hidden>
+            <p id="send-error-text"></p>
+            <button class="button button--secondary" type="button" id="retry" data-i18n="send.retry">
+              Intentar de nuevo
+            </button>
+          </div>
         </div>
       </div>
     </main>

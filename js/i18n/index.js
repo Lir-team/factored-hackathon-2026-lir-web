@@ -14,6 +14,10 @@ export function getLocale() {
   return LOCALES[current];
 }
 
+export function hasKey(key) {
+  return key in dictionaries.es;
+}
+
 /** Look up a key; `{name}` placeholders are filled from `vars`. Falls back to Spanish. */
 export function t(key, vars) {
   const text = dictionaries[current]?.[key] ?? dictionaries.es[key] ?? key;

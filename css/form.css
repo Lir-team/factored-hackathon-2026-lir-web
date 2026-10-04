@@ -486,3 +486,155 @@ legend {
     width: 100%;
   }
 }
+
+/* Errors: say what to fix, next to the field and in a summary on submit. */
+
+.error-summary {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 3px solid var(--alert);
+  border-radius: var(--radius-control);
+  background: var(--paper);
+}
+
+.error-summary:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.error-summary__title {
+  font-size: var(--step-1);
+}
+
+.error-summary__list {
+  margin-top: var(--space-2);
+  padding-left: var(--space-5);
+}
+
+.error-summary__list a {
+  color: var(--alert);
+  font-weight: 700;
+}
+
+.field__error {
+  margin-top: var(--space-1);
+  color: var(--alert);
+  font-weight: 700;
+}
+
+.step > .field__error {
+  margin: 0 0 var(--space-3);
+}
+
+.has-error:not(.step) {
+  padding-left: var(--space-4);
+  border-left: 4px solid var(--alert);
+}
+
+.has-error .input,
+.has-error .statement {
+  border-color: var(--alert);
+  border-width: 2px;
+}
+
+.has-error > .check {
+  margin-top: var(--space-2);
+}
+
+#declaration-field .check {
+  margin-top: 0;
+}
+
+.send-error {
+  flex-basis: 100%;
+  padding: var(--space-4);
+  border-left: 4px solid var(--alert);
+  background: var(--paper);
+}
+
+.send-error p {
+  font-weight: 700;
+}
+
+.send-error .button {
+  margin-top: var(--space-3);
+}
+
+/* Confirmation */
+
+.success {
+  padding: var(--space-6) clamp(var(--space-4), 4vw, var(--space-6));
+  background: var(--paper);
+  border-radius: var(--radius-surface);
+}
+
+.success:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.success__title {
+  font-size: var(--step-3);
+}
+
+.success__folio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-3);
+  font-size: var(--step-1);
+}
+
+.success__folio strong {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.success h3 {
+  margin-top: var(--space-6);
+}
+
+.success__next {
+  margin-top: var(--space-2);
+  padding-left: var(--space-5);
+}
+
+.success__next li + li {
+  margin-top: var(--space-2);
+}
+
+.success__demo {
+  margin-top: var(--space-5);
+  color: var(--slate);
+}
+
+.tech {
+  margin-top: var(--space-5);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--space-4);
+}
+
+.tech summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tech h4 {
+  margin-top: var(--space-4);
+  font-size: var(--step-0);
+}
+
+.tech pre {
+  margin-top: var(--space-2);
+  max-height: 24rem;
+  overflow: auto;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--mist);
+  font-size: var(--step--1);
+  line-height: 1.45;
+}
+
+.success > .button {
+  margin-top: var(--space-6);
+}

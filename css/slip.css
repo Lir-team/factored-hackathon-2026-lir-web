@@ -117,9 +117,8 @@
 
 /* The stamp lands once, when the report is sent. */
 .slip__stamp {
-  position: absolute;
-  right: var(--space-4);
-  bottom: calc(var(--space-7) + var(--space-4));
+  width: fit-content;
+  margin: var(--space-4) var(--space-2) 0 auto;
   padding: var(--space-1) var(--space-4);
   border: 3px solid var(--marigold);
   border-radius: 6px;
