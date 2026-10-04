@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- The link carries a single-use token: never send it to another site as a referrer. -->
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="data:," />
+    <title>LATAM Bank: autorizar una solicitud</title>
+    <meta name="description" content="Approve or reject an action the bank will take on your behalf." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600..700&display=swap"
+    />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/form.css" />
+    <link rel="stylesheet" href="css/approval.css" />
+    <script src="js/config.js"></script>
+    <script type="module" src="js/approve.js"></script>
+  </head>
+  <body class="approval-body">
+    <!-- Icons, referenced with <use>. Decorative: every icon sits next to its text. -->
+    <svg xmlns="http://www.w3.org/2000/svg" hidden>
+      <symbol id="i-lock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3" /></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></g></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 3.5 5 6v5.5c0 4.2 3 7.6 7 9 4-1.4 7-4.8 7-9V6z" /></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="m8 12.5 2.7 2.7L16.5 9.5" /></g></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="m9 9 6 6m0-6-6 6" /></g></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.8 19.5h18.4z" /><path d="M12 10v4.5M12 17.2v.1" /></g></symbol>
+    </svg>
+
+    <header class="topbar">
+      <div class="topbar__inner">
+        <a class="wordmark" href="./">LATAM Bank</a>
+        <p class="secure-badge">
+          <svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg>
+          <span data-i18n="approval.secure">Conexión segura</span>
+        </p>
+      </div>
+    </header>
+
+    <main id="main" class="approval-main" tabindex="-1">
+      <!-- Loading: a skeleton of the card, announced once. -->
+      <div class="authz authz--loading" id="approval-loading" aria-busy="true">
+        <p class="visually-hidden" role="status" data-i18n="approval.loading">Cargando la solicitud…</p>
+        <div class="skeleton skeleton--eyebrow"></div>
+        <div class="skeleton skeleton--title"></div>
+        <div class="skeleton skeleton--row"></div>
+        <div class="skeleton skeleton--row"></div>
+        <div class="skeleton skeleton--row"></div>
+        <div class="skeleton skeleton--button"></div>
+      </div>
+
+      <article class="authz" id="approval" aria-labelledby="approval-title" hidden>
+        <header class="authz__head">
+          <p class="authz__eyebrow" data-i18n="approval.eyebrow">Solicitud de autorización</p>
+          <p class="status-pill" id="approval-pill" data-status="pending"></p>
+        </header>
+        <h1 class="authz__title" id="approval-title"></h1>
+        <p class="authz__lede" id="approval-lede" data-i18n="approval.lede">Revisa el detalle. El banco solo lo hace si lo apruebas.</p>
+
+        <dl class="authz__details" id="approval-details"></dl>
+
+        <section class="authz__consequences" id="approval-consequences" aria-labelledby="consequences-title">
+          <h2 class="authz__subtitle" id="consequences-title" data-i18n="approval.next.title">Qué pasa después</h2>
+          <ul>
+            <li><strong data-i18n="approval.next.approve.label">Si apruebas:</strong> <span data-i18n="approval.next.approve">el banco lo ejecuta y te confirma el resultado con un número de seguimiento.</span></li>
+            <li><strong data-i18n="approval.next.reject.label">Si rechazas:</strong> <span data-i18n="approval.next.reject">no se hace nada.</span></li>
+          </ul>
+        </section>
+
+        <p class="authz__expires" id="approval-expires-row">
+          <svg class="icon" aria-hidden="true"><use href="#i-clock" /></svg>
+          <span id="approval-expires"></span>
+        </p>
+
+        <div class="authz__actions" id="approval-actions">
+          <button class="button button--primary" type="button" id="approve">
+            <span class="button__spinner" aria-hidden="true"></span>
+            <span data-i18n="approval.approve">Aprobar</span>
+          </button>
+          <button class="button button--secondary" type="button" id="reject">
+            <span class="button__spinner" aria-hidden="true"></span>
+            <span data-i18n="approval.reject">Rechazar</span>
+          </button>
+        </div>
+
+        <!-- Shown instead of the actions once decided. -->
+        <div class="outcome" id="approval-outcome" role="status" tabindex="-1" hidden>
+          <svg class="outcome__icon" aria-hidden="true"><use id="approval-outcome-icon" href="#i-check" /></svg>
+          <div>
+            <p class="outcome__title" id="approval-outcome-title"></p>
+            <p class="outcome__text" id="approval-outcome-text"></p>
+          </div>
+        </div>
+
+        <footer class="authz__foot">
+          <p>
+            <svg class="icon" aria-hidden="true"><use href="#i-shield" /></svg>
+            <span data-i18n="approval.note">Tu decisión queda registrada con fecha y hora. Nunca te pediremos claves, NIP ni códigos.</span>
+          </p>
+          <p class="authz__ref"><span data-i18n="approval.reference">Referencia</span> <span id="approval-ref"></span></p>
+        </footer>
+      </article>
+
+      <!-- A link that cannot be used: spent, wrong, expired, or the bank is unreachable. -->
+      <div class="authz authz--error" id="approval-error" role="alert" tabindex="-1" hidden>
+        <svg class="outcome__icon outcome__icon--error" id="approval-error-svg" aria-hidden="true"><use id="approval-error-icon" href="#i-alert" /></svg>
+        <h1 class="authz__title" id="approval-error-title"></h1>
+        <p class="authz__lede" id="approval-error-text"></p>
+        <a class="button button--secondary" href="./" data-i18n="approval.home">Ir a LATAM Bank</a>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p data-i18n="footer"></p>
+    </footer>
+  </body>
+</html>
