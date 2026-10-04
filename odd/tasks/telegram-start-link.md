@@ -127,8 +127,16 @@ metadata "Pub/Sub attributes" (`success.tech.attributes`).
 - The parent decoded the QR in the success screenshot with OpenCV and got the
   stub `https://t.me/lir_bank_bot?start=...` URL.
 - Advisory follow-ups (suggestions, not blocking):
-  - [ ] R3-start-url-credential-port-untested (`js/core/submit.js:30-31`): add
+  - [x] R3-start-url-credential-port-untested (`js/core/submit.js:30-31`): add
     tests for credentials and for a non-default port on the exact `t.me` host.
-  - [ ] R3-success-handoff-decision-untested (`js/ui/success.js:13-18`):
+    Done in `03b1b12` test(submit): `user@`, `user:pass@`, `:pass@` and
+    `:8443` on `t.me` yield null; `:443` is normalized away by `new URL` and
+    passes as `https://t.me/...`. RED observed with the guards removed
+    (`actual: 'https://user@t.me/...'`), GREEN after restoring them.
+  - [x] R3-success-handoff-decision-untested (`js/ui/success.js:13-18`):
     extract the linked, unlinked and non-telegram decision into a pure
-    `js/core` helper with tests.
+    `js/core` helper with tests. Done in `6be2b6a` refactor(success):
+    `js/core/handoff.js` `telegramHandoff({ channel, telegramStartUrl })`
+    returns `linked`/`unlinked`/`none`; `tests/handoff.test.js` (4 cases)
+    was RED first (`ERR_MODULE_NOT_FOUND`), then GREEN. `success.js` uses it
+    with no behavior change. Checks: `node --test tests/` 59/59.
