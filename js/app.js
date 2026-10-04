@@ -9,7 +9,16 @@ import {
 } from "./core/case-rules.js";
 import { buildCasePayload, randomUUID, validateCase } from "./core/case-payload.js";
 import { submitCase } from "./core/submit.js";
-import { applyTranslations, getLanguage, getLocale, t } from "./i18n/index.js";
+import {
+  applyTranslations,
+  getHtmlLang,
+  getLanguage,
+  getLocale,
+  isLanguage,
+  setLanguage,
+  storedLanguage,
+  t,
+} from "./i18n/index.js";
 import { $, $$ } from "./ui/dom.js";
 import { FIELD_ORDER, renderErrorSummary, renderFieldErrors } from "./ui/errors.js";
 import { readFormState } from "./ui/form-state.js";
@@ -219,14 +228,41 @@ function resetForm() {
   $("#category-options input")?.focus();
 }
 
-function init() {
+/** Translate static copy, <html lang>, the title and the switch state. */
+function applyLanguage() {
+  document.documentElement.lang = getHtmlLang();
+  document.title = t("doc.title");
   applyTranslations(document);
+  for (const button of $$(".lang-switch button")) {
+    button.setAttribute("aria-pressed", String(button.dataset.lang === getLanguage()));
+  }
+}
+
+function onLanguageClick(event) {
+  const language = event.target.closest("button[data-lang]")?.dataset.lang;
+  if (!language || language === getLanguage()) return;
+  setLanguage(language);
+  applyLanguage();
+  // Option lists carry translated labels and Intl-formatted amounts: rebuild them, keeping answers.
+  const state = readFormState(form);
+  renderOptions(state);
+  if (state.contact_channel) applyContact(state.contact_channel, { prefill: false });
+  update();
+}
+
+function init() {
+  // ?lang=pt|en|es wins (handy for links and screenshots), then the saved choice.
+  const params = new URLSearchParams(location.search);
+  const requested = params.get("lang");
+  if (isLanguage(requested)) setLanguage(requested);
+  else setLanguage(storedLanguage());
+  applyLanguage();
   $("#customer-name").textContent = customer.name;
   $("#customer-id").textContent = customer.customer_id;
 
   // Deep link: ?reason=<category> preselects a reason, e.g. from a
   // "Report this charge" link on the statement page.
-  const reason = new URLSearchParams(location.search).get("reason");
+  const reason = params.get("reason");
   renderOptions({ category: categoryRule(reason) ? reason : null, contact_channel: "whatsapp" });
   applyContact("whatsapp", { prefill: true });
 
@@ -247,6 +283,7 @@ function init() {
     update();
   });
   form.addEventListener("submit", onSubmit);
+  $(".lang-switch").addEventListener("click", onLanguageClick);
   $("#retry").addEventListener("click", () => form.requestSubmit());
   $("#report-another").addEventListener("click", resetForm);
   update();

@@ -143,7 +143,7 @@ export default {
   "success.next.contact.telegram": "Lir, el asistente de LATAM Bank, revisa tu caso y te escribe por Telegram ({value}).",
   "success.next.contact.email": "Lir, el asistente de LATAM Bank, revisa tu caso y te escribe a {value}.",
   "success.next.contact.phone": "Un ejecutivo de LATAM Bank revisa tu caso y te llama al {value}.",
-  "success.next.freeze": "Pediste congelar tu tarjeta {card}. Mientras esté congelada no pasa ninguna compra nueva.",
+  "success.next.freeze": "Pediste congelar esta tarjeta: {card}. Mientras esté congelada no pasa ninguna compra nueva.",
   "success.next.fraud": "Si confirmamos que no hiciste el cargo, te decimos cuándo se devuelve tu dinero.",
   "success.next.other": "Te avisamos por el mismo canal cuando tu caso tenga respuesta.",
   "success.demo":
