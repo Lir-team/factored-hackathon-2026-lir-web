@@ -1,11 +1,18 @@
 /* Renderers for the option lists: categories, cards, statement rows, answers, channels. */
 import { CATEGORY_ORDER, CATEGORIES, CONTACT_CHANNELS, ANSWERS } from "../core/case-rules.js";
 import { formatMoney, formatDay, formatTime, countryName } from "../core/format.js";
-import { t } from "../i18n/index.js";
+import { getLocale, t } from "../i18n/index.js";
 import { h } from "./dom.js";
 
 export function cardName(card) {
   return t("card.name", { type: t(`card.type.${card.type}`), last4: card.last4 });
+}
+
+/** "Credit ending 7390 and Debit ending 4821", in the UI language. */
+export function cardList(cards) {
+  const names = cards.map(cardName);
+  if (typeof Intl.ListFormat !== "function") return names.join(", ");
+  return new Intl.ListFormat(getLocale(), { type: "conjunction" }).format(names);
 }
 
 export function renderCategories(container, selected) {

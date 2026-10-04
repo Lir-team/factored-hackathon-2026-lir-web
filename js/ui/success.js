@@ -2,17 +2,24 @@
 import { pubsubAttributesFor } from "../core/case-payload.js";
 import { t } from "../i18n/index.js";
 import { $ } from "./dom.js";
-import { cardName } from "./render.js";
+import { cardList, cardName } from "./render.js";
 
 export function renderSuccess({ payload, outcome, customer }) {
   const contact = payload.customer.preferred_contact;
   $("#success-folio").textContent = outcome.folio;
   $("#success-next-contact").textContent = t(`success.next.contact.${contact.channel}`, { value: contact.value });
 
-  const card = payload.card && customer.cards.find((c) => c.last4 === payload.card.last4);
+  const cards = payload.cards
+    .map((card) => customer.cards.find((c) => c.last4 === card.last4))
+    .filter(Boolean);
   const freeze = $("#success-next-freeze");
-  freeze.hidden = !(payload.freeze_card_requested && card);
-  freeze.textContent = card ? t("success.next.freeze", { card: cardName(card) }) : "";
+  freeze.hidden = !(payload.freeze_card_requested && cards.length);
+  freeze.textContent =
+    cards.length > 1
+      ? t("success.next.freeze_many", { cards: cardList(cards) })
+      : cards.length === 1
+        ? t("success.next.freeze", { card: cardName(cards[0]) })
+        : "";
 
   $("#success-next-outcome").textContent = payload.fraud_suspected
     ? t("success.next.fraud")

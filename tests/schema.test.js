@@ -33,7 +33,7 @@ const common = {
 /** One valid answer set per category. */
 const STATES = {
   unrecognized_charge: {
-    transaction_ids: ["TXN-20261001-65233"],
+    transaction_ids: ["TXN-20261001-65233", "TXN-20260928-41207"],
     card_in_possession: "unsure",
     shared_credentials: "yes",
     freeze_card_requested: true,
@@ -80,6 +80,10 @@ test("the checker rejects payloads that break the contract", () => {
   assert.ok(broken({ intent_hint: "cobro_indebido" }).some((e) => e.includes("$.intent_hint")));
   assert.ok(broken({ transactions: [] }).some((e) => e.includes("fewer than 1")));
   assert.ok(broken({ consent: false }).some((e) => e.includes("$.consent")));
+  assert.ok(broken({ cards: [payload.cards[0], payload.cards[0]] }).some((e) => e.includes("duplicate items")));
+  assert.ok(broken({ card: payload.cards[0] }).some((e) => e.includes("unexpected card")));
+  const lost = buildCasePayload({ ...common, category: "card_lost_stolen", ...STATES.card_lost_stolen }, ctx());
+  assert.ok(check(schema, { ...lost, cards: [] }).some((e) => e.includes("fewer than 1")));
   const { schema_version, ...missing } = payload;
   assert.ok(check(schema, missing).some((e) => e.includes("missing schema_version")));
 });

@@ -9,7 +9,7 @@ import {
   CATEGORIES,
   CONTACT_CHANNELS,
   categoryRule,
-  resolveCard,
+  resolveCards,
   selectedTransactions,
   transactionModeFor,
   transactionsApply,
@@ -17,7 +17,7 @@ import {
 
 export { CATEGORIES };
 
-export const SCHEMA_VERSION = "1.0";
+export const SCHEMA_VERSION = "1.1";
 export const LANGUAGES = Object.freeze(["es", "pt", "en"]);
 export const DESCRIPTION_MIN = 20;
 export const DESCRIPTION_MAX = 1000;
@@ -151,7 +151,7 @@ export function randomUUID() {
 }
 
 /**
- * Build the case payload (schema_version 1.0). Throws CaseValidationError
+ * Build the case payload (schema_version 1.1). Throws CaseValidationError
  * when the answers are not valid.
  * @param {object} state   formState
  * @param {object} context { customer, language, now?, uuid? }
@@ -166,7 +166,7 @@ export function buildCasePayload(state, context) {
 
   const rule = categoryRule(state.category);
   const transactions = selectedTransactions(state, customer);
-  const card = resolveCard(state, customer);
+  const cards = resolveCards(state, customer);
   const lostCard = state.category === "card_lost_stolen";
 
   return {
@@ -191,7 +191,7 @@ export function buildCasePayload(state, context) {
       merchant: t.merchant,
       occurred_at: t.occurred_at,
     })),
-    card: card ? { last4: card.last4, type: card.type } : null,
+    cards: cards.map((card) => ({ last4: card.last4, type: card.type })),
     incident: rule.fraud_suspected
       ? {
           occurred_at: lostCard ? new Date(state.incident_occurred_at).toISOString() : null,

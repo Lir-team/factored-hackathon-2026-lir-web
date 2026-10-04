@@ -56,6 +56,9 @@ export function check(schema, value, root = schema, path = "$") {
   if (Array.isArray(value)) {
     if (schema.minItems !== undefined && value.length < schema.minItems) fail(`fewer than ${schema.minItems} items`);
     if (schema.maxItems !== undefined && value.length > schema.maxItems) fail(`more than ${schema.maxItems} items`);
+    if (schema.uniqueItems && new Set(value.map((item) => JSON.stringify(item))).size !== value.length) {
+      fail("has duplicate items");
+    }
     if (schema.items) value.forEach((item, i) => errors.push(...check(schema.items, item, root, `${path}[${i}]`)));
   }
 

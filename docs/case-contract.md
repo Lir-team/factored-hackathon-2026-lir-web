@@ -5,7 +5,7 @@ the Lir agent. The frontend defines this contract; the backend does not exist
 yet.
 
 - Payload schema: [`schema/case.schema.json`](../schema/case.schema.json)
-  (JSON Schema 2020-12, `schema_version` `"1.0"`).
+  (JSON Schema 2020-12, `schema_version` `"1.1"`).
 - Payload builder: `buildCasePayload` in `js/core/case-payload.js`.
 - Pub/Sub attributes: `pubsubAttributesFor` in the same module.
 
@@ -57,19 +57,24 @@ The backend must re-validate everything. In particular, it must check that
 
 ## Categories
 
-| `category`            | `intent_hint`         | `fraud_suspected` | Transactions        | Card     |
+| `category`            | `intent_hint`         | `fraud_suspected` | Transactions        | `cards`  |
 |-----------------------|-----------------------|-------------------|---------------------|----------|
-| `unrecognized_charge` | `cargo_no_reconocido` | `true`            | 1 or more, required | from the first charge |
-| `card_lost_stolen`    | `cargo_no_reconocido` | `true`            | optional (used after the loss) | required |
-| `improper_fee`        | `cobro_indebido`      | `false`           | exactly 1           | from the charge |
-| `transaction_inquiry` | `consulta_movimiento` | `false`           | exactly 1           | from the charge |
-| `app_issue`           | `otra_queja`          | `false`           | none                | `null`   |
-| `service_complaint`   | `otra_queja`          | `false`           | none                | `null`   |
-| `other_request`       | `fuera_de_alcance`    | `false`           | none                | `null`   |
+| `unrecognized_charge` | `cargo_no_reconocido` | `true`            | 1 or more, required | every card behind the charges |
+| `card_lost_stolen`    | `cargo_no_reconocido` | `true`            | optional (used after the loss) | the picked card (exactly 1) |
+| `improper_fee`        | `cobro_indebido`      | `false`           | exactly 1           | the charge's card |
+| `transaction_inquiry` | `consulta_movimiento` | `false`           | exactly 1           | the charge's card |
+| `app_issue`           | `otra_queja`          | `false`           | none                | `[]`     |
+| `service_complaint`   | `otra_queja`          | `false`           | none                | `[]`     |
+| `other_request`       | `fuera_de_alcance`    | `false`           | none                | `[]`     |
 
-Fraud categories carry an `incident` object and may set
-`freeze_card_requested`; other categories send `incident: null` and
-`freeze_card_requested: false`.
+`cards` lists each card once, in statement order. Fraud categories carry an
+`incident` object and may set `freeze_card_requested`, which applies to every
+card in `cards` (charges on two cards freeze both); other categories send
+`incident: null` and `freeze_card_requested: false`.
+
+Version 1.1 replaced the single `card` object (or `null`) of 1.0 with the
+`cards` array, so a report with charges on several cards no longer drops all
+but the first.
 
 `intent_hint` and `priority_hint` are hints. The agent re-classifies the
 intent, and the server owns priority. The client rule is: `critical` for a
@@ -94,7 +99,7 @@ should map `en` to `es` (or reply in English if the agent learns it).
     "priority_hint": "critical",
     "country": "MX",
     "language": "es",
-    "schema_version": "1.0"
+    "schema_version": "1.1"
   }
   ```
 

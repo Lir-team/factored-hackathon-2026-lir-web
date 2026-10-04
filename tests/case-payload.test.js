@@ -152,7 +152,7 @@ test("the declaration must be accepted", () => {
 test("buildCasePayload produces the versioned case for an unrecognized charge", () => {
   const payload = buildCasePayload(fraudState(), ctx());
   assert.deepEqual(Object.keys(payload).sort(), [
-    "card",
+    "cards",
     "case_id",
     "category",
     "channel",
@@ -169,7 +169,7 @@ test("buildCasePayload produces the versioned case for an unrecognized charge", 
     "submitted_at",
     "transactions",
   ]);
-  assert.equal(payload.schema_version, "1.0");
+  assert.equal(payload.schema_version, "1.1");
   assert.equal(payload.case_id, UUID);
   assert.equal(payload.submitted_at, "2026-10-04T16:00:00.000Z");
   assert.equal(payload.language, "es");
@@ -199,7 +199,7 @@ test("buildCasePayload produces the versioned case for an unrecognized charge", 
       occurred_at: "2026-10-03T02:58:10-06:00",
     },
   ]);
-  assert.deepEqual(payload.card, { last4: "7390", type: "credit" });
+  assert.deepEqual(payload.cards, [{ last4: "7390", type: "credit" }], "both charges are on 7390");
   assert.deepEqual(payload.incident, {
     occurred_at: null,
     location: null,
@@ -209,6 +209,18 @@ test("buildCasePayload produces the versioned case for an unrecognized charge", 
   assert.equal(payload.freeze_card_requested, true);
   assert.equal(payload.description, "I did not make these two online purchases last night.");
   assert.equal(payload.consent, true);
+});
+
+test("unrecognized charges on two cards list both cards to freeze, once each, in statement order", () => {
+  const payload = buildCasePayload(
+    fraudState({ transaction_ids: ["TXN-20261002-76980", "TXN-20261003-88412", "TXN-20261003-88409"] }),
+    ctx(),
+  );
+  assert.deepEqual(payload.cards, [
+    { last4: "7390", type: "credit" },
+    { last4: "4821", type: "debit" },
+  ]);
+  assert.equal(payload.freeze_card_requested, true);
 });
 
 test("a lost card carries the incident with an ISO timestamp and the picked card", () => {
@@ -224,7 +236,7 @@ test("a lost card carries the incident with an ISO timestamp and the picked card
     }),
     ctx(),
   );
-  assert.deepEqual(payload.card, { last4: "4821", type: "debit" });
+  assert.deepEqual(payload.cards, [{ last4: "4821", type: "debit" }]);
   assert.deepEqual(payload.transactions, []);
   assert.equal(payload.priority_hint, "critical");
   assert.deepEqual(payload.incident, {
@@ -247,7 +259,7 @@ test("non-fraud categories drop fraud-only fields", () => {
   assert.equal(payload.intent_hint, "otra_queja");
   assert.equal(payload.fraud_suspected, false);
   assert.deepEqual(payload.transactions, []);
-  assert.equal(payload.card, null);
+  assert.deepEqual(payload.cards, []);
   assert.equal(payload.incident, null);
   assert.equal(payload.freeze_card_requested, false);
   assert.equal(payload.language, "pt");
@@ -283,7 +295,7 @@ test("pubsubAttributesFor returns string-only attributes", () => {
     priority_hint: "critical",
     country: "MX",
     language: "es",
-    schema_version: "1.0",
+    schema_version: "1.1",
   });
   for (const value of Object.values(attributes)) assert.equal(typeof value, "string");
 });

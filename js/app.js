@@ -2,7 +2,7 @@
 import { customer } from "./data/mock-customer.js";
 import {
   categoryRule,
-  resolveCard,
+  resolveCards,
   statementFor,
   stepsFor,
   transactionModeFor,
@@ -23,6 +23,7 @@ import { $, $$ } from "./ui/dom.js";
 import { FIELD_ORDER, renderErrorSummary, renderFieldErrors } from "./ui/errors.js";
 import { readFormState } from "./ui/form-state.js";
 import {
+  cardList,
   cardName,
   renderAnswers,
   renderCards,
@@ -103,10 +104,11 @@ function applySteps(state) {
 
 function applyFraudAlert(state) {
   $("#fraud-alert").hidden = !categoryRule(state.category)?.fraud_suspected;
-  const card = resolveCard(state, customer);
-  $("#freeze-target").textContent = card
-    ? t("fraud.target", { card: cardName(card) })
-    : t("fraud.target_none");
+  const cards = resolveCards(state, customer);
+  let target = t("fraud.target_none");
+  if (cards.length === 1) target = t("fraud.target", { card: cardName(cards[0]) });
+  if (cards.length > 1) target = t("fraud.target_many", { cards: cardList(cards) });
+  $("#freeze-target").textContent = target;
 }
 
 const CONTACT_INPUT = {

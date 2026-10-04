@@ -36,6 +36,7 @@ export default {
     "Si alguien más tiene los datos de tu tarjeta, congelarla frena compras nuevas mientras revisamos el caso. Puedes descongelarla desde la app.",
   "fraud.freeze": "Congelar mi tarjeta ahora",
   "fraud.target": "Tarjeta que se congela: {card}",
+  "fraud.target_many": "Tarjetas que se congelan: {cards}",
   "fraud.target_none": "Elige el cargo o la tarjeta y te mostramos cuál se congela.",
 
   "step.card.title": "¿Qué tarjeta y cuándo pasó?",
@@ -95,6 +96,7 @@ export default {
   "slip.charges": "Cargos",
   "slip.total": "Total",
   "slip.card": "Tarjeta",
+  "slip.cards": "Tarjetas",
   "slip.freeze": "Congelar tarjeta",
   "slip.contact": "Contacto",
   "slip.language": "Idioma",
@@ -144,6 +146,7 @@ export default {
   "success.next.contact.email": "Lir, el asistente de LATAM Bank, revisa tu caso y te escribe a {value}.",
   "success.next.contact.phone": "Un ejecutivo de LATAM Bank revisa tu caso y te llama al {value}.",
   "success.next.freeze": "Pediste congelar esta tarjeta: {card}. Mientras esté congelada no pasa ninguna compra nueva.",
+  "success.next.freeze_many": "Pediste congelar estas tarjetas: {cards}. Mientras estén congeladas no pasa ninguna compra nueva.",
   "success.next.fraud": "Si confirmamos que no hiciste el cargo, te decimos cuándo se devuelve tu dinero.",
   "success.next.other": "Te avisamos por el mismo canal cuando tu caso tenga respuesta.",
   "success.demo":

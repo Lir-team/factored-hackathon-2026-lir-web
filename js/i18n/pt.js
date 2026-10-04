@@ -36,6 +36,7 @@ export default {
     "Se outra pessoa tem os dados do seu cartão, bloqueá-lo impede novas compras enquanto analisamos o caso. Você pode desbloqueá-lo pelo app.",
   "fraud.freeze": "Bloquear meu cartão agora",
   "fraud.target": "Cartão que será bloqueado: {card}",
+  "fraud.target_many": "Cartões que serão bloqueados: {cards}",
   "fraud.target_none": "Escolha a cobrança ou o cartão e mostramos qual será bloqueado.",
 
   "step.card.title": "Qual cartão e quando aconteceu?",
@@ -94,6 +95,7 @@ export default {
   "slip.charges": "Cobranças",
   "slip.total": "Total",
   "slip.card": "Cartão",
+  "slip.cards": "Cartões",
   "slip.freeze": "Bloquear cartão",
   "slip.contact": "Contato",
   "slip.language": "Idioma",
@@ -145,6 +147,7 @@ export default {
   "success.next.contact.email": "Lir, assistente virtual do LATAM Bank, analisa seu caso e escreve para {value}.",
   "success.next.contact.phone": "Um atendente do LATAM Bank analisa seu caso e liga para {value}.",
   "success.next.freeze": "Você pediu o bloqueio deste cartão: {card}. Enquanto estiver bloqueado, nenhuma compra nova é aprovada.",
+  "success.next.freeze_many": "Você pediu o bloqueio destes cartões: {cards}. Enquanto estiverem bloqueados, nenhuma compra nova é aprovada.",
   "success.next.fraud": "Se confirmarmos que você não fez a cobrança, avisamos quando o dinheiro volta para sua conta.",
   "success.next.other": "Avisamos pelo mesmo canal quando seu caso tiver resposta.",
   "success.demo":

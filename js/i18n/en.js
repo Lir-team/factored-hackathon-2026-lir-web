@@ -36,6 +36,7 @@ export default {
     "If someone else has your card details, freezing the card stops new purchases while we review the case. You can unfreeze it in the app.",
   "fraud.freeze": "Freeze my card now",
   "fraud.target": "Card to freeze: {card}",
+  "fraud.target_many": "Cards to freeze: {cards}",
   "fraud.target_none": "Choose the charge or the card and we'll show which one gets frozen.",
 
   "step.card.title": "Which card, and when did it happen?",
@@ -93,6 +94,7 @@ export default {
   "slip.charges": "Charges",
   "slip.total": "Total",
   "slip.card": "Card",
+  "slip.cards": "Cards",
   "slip.freeze": "Freeze card",
   "slip.contact": "Contact",
   "slip.language": "Language",
@@ -142,6 +144,7 @@ export default {
   "success.next.contact.email": "Lir, LATAM Bank's assistant, reviews your case and writes to you at {value}.",
   "success.next.contact.phone": "A LATAM Bank agent reviews your case and calls you at {value}.",
   "success.next.freeze": "You asked us to freeze this card: {card}. While it's frozen, no new purchases go through.",
+  "success.next.freeze_many": "You asked us to freeze these cards: {cards}. While they're frozen, no new purchases go through.",
   "success.next.fraud": "If we confirm you didn't make the charge, we'll tell you when the money goes back to your account.",
   "success.next.other": "We'll let you know on the same channel when your case has an answer.",
   "success.demo":

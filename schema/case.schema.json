@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://lir-web.example/schema/case.schema.json",
   "title": "LATAM Bank support case",
-  "description": "Payload sent by lir-web to POST /v1/cases (schema_version 1.0). See docs/case-contract.md.",
+  "description": "Payload sent by lir-web to POST /v1/cases (schema_version 1.1). See docs/case-contract.md.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -17,14 +17,14 @@
     "fraud_suspected",
     "priority_hint",
     "transactions",
-    "card",
+    "cards",
     "incident",
     "freeze_card_requested",
     "description",
     "consent"
   ],
   "properties": {
-    "schema_version": { "const": "1.0" },
+    "schema_version": { "const": "1.1" },
     "case_id": {
       "description": "Client-generated UUID. Also sent as the Idempotency-Key header.",
       "type": "string",
@@ -80,7 +80,13 @@
       "maxItems": 50,
       "items": { "$ref": "#/$defs/transaction" }
     },
-    "card": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/card" }] },
+    "cards": {
+      "description": "Cards the case is about, once each: the picked card for card_lost_stolen, otherwise the cards behind the selected charges, in statement order. freeze_card_requested applies to all of them.",
+      "type": "array",
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/card" }
+    },
     "incident": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/incident" }] },
     "freeze_card_requested": { "type": "boolean" },
     "description": { "type": "string", "minLength": 20, "maxLength": 1000 },
@@ -110,7 +116,9 @@
     },
     {
       "if": { "properties": { "category": { "const": "card_lost_stolen" } } },
-      "then": { "properties": { "card": { "$ref": "#/$defs/card" }, "priority_hint": { "const": "critical" } } }
+      "then": {
+        "properties": { "cards": { "minItems": 1, "maxItems": 1 }, "priority_hint": { "const": "critical" } }
+      }
     },
     {
       "if": { "properties": { "category": { "const": "improper_fee" } } },
@@ -132,11 +140,23 @@
     },
     {
       "if": { "properties": { "category": { "enum": ["app_issue", "service_complaint"] } } },
-      "then": { "properties": { "intent_hint": { "const": "otra_queja" }, "transactions": { "maxItems": 0 } } }
+      "then": {
+        "properties": {
+          "intent_hint": { "const": "otra_queja" },
+          "transactions": { "maxItems": 0 },
+          "cards": { "maxItems": 0 }
+        }
+      }
     },
     {
       "if": { "properties": { "category": { "const": "other_request" } } },
-      "then": { "properties": { "intent_hint": { "const": "fuera_de_alcance" }, "transactions": { "maxItems": 0 } } }
+      "then": {
+        "properties": {
+          "intent_hint": { "const": "fuera_de_alcance" },
+          "transactions": { "maxItems": 0 },
+          "cards": { "maxItems": 0 }
+        }
+      }
     }
   ],
   "$defs": {

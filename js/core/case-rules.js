@@ -112,17 +112,15 @@ export function selectedTransactions(state, customer) {
 }
 
 /**
- * The card a case is about: the picked card for a lost or stolen card,
- * otherwise the card of the first selected charge.
+ * The cards a case is about: the picked card for a lost or stolen card,
+ * otherwise every card behind the selected charges (once each, in statement
+ * order). These are the cards a freeze request applies to.
  */
-export function resolveCard(state, customer) {
+export function resolveCards(state, customer) {
   const rule = categoryRule(state.category);
-  if (!rule) return null;
-  let last4 = null;
-  if (rule.needs_card) {
-    last4 = state.card_last4 ?? null;
-  } else {
-    last4 = selectedTransactions(state, customer)[0]?.card_last4 ?? null;
-  }
-  return customer.cards.find((c) => c.last4 === last4) ?? null;
+  if (!rule) return [];
+  const last4s = rule.needs_card
+    ? [state.card_last4].filter(Boolean)
+    : [...new Set(selectedTransactions(state, customer).map((t) => t.card_last4))];
+  return last4s.map((last4) => customer.cards.find((c) => c.last4 === last4)).filter(Boolean);
 }

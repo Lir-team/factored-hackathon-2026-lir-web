@@ -1,9 +1,9 @@
 /* The live case slip beside the form. */
-import { categoryRule, selectedTransactions, resolveCard } from "../core/case-rules.js";
+import { categoryRule, selectedTransactions, resolveCards } from "../core/case-rules.js";
 import { formatMoney, formatDateTime, sumByCurrency } from "../core/format.js";
 import { t } from "../i18n/index.js";
 import { $, h, setSlipValue } from "./dom.js";
-import { cardName } from "./render.js";
+import { cardList } from "./render.js";
 
 /**
  * @param {object} state  formState from readFormState
@@ -13,7 +13,7 @@ export function renderSlip(state, ctx) {
   const { customer, language, locale, receipt } = ctx;
   const rule = categoryRule(state.category);
   const charges = selectedTransactions(state, customer);
-  const card = resolveCard(state, customer);
+  const cards = resolveCards(state, customer);
   const showCharges = charges.length > 0;
 
   setSlipValue($("#slip-reason"), rule ? t(`category.${state.category}.short`) : "");
@@ -37,9 +37,10 @@ export function renderSlip(state, ctx) {
       .join(" + "),
   );
 
-  const showCard = Boolean(rule && (rule.needs_card || rule.fraud_suspected || card));
+  const showCard = Boolean(rule && (rule.needs_card || rule.fraud_suspected || cards.length));
   $("#slip-card-row").hidden = !showCard;
-  setSlipValue($("#slip-card"), card ? cardName(card) : "");
+  $("#slip-card-row dt").textContent = t(cards.length > 1 ? "slip.cards" : "slip.card");
+  setSlipValue($("#slip-card"), cardList(cards));
 
   $("#slip-freeze-row").hidden = !rule?.fraud_suspected;
   setSlipValue($("#slip-freeze"), state.freeze_card_requested ? t("slip.yes") : t("slip.no"));
