@@ -1,9 +1,5 @@
 /* The case slip: a receipt that fills itself in. The one bold element on the page. */
 
-.layout__slip {
-  filter: drop-shadow(0 1px 1px rgb(19 41 61 / 0.08)) drop-shadow(0 10px 18px rgb(19 41 61 / 0.12));
-}
-
 .slip {
   --perf-gap: 16px;
   --perf-radius: 6px;
@@ -11,12 +7,20 @@
   padding: var(--space-6) var(--space-5) var(--space-5);
   background: var(--paper);
   border-radius: 0 0 var(--radius-surface) var(--radius-surface);
+  /* box-shadow, not filter + mask: on a sticky parent Chromium leaves stale text fragments behind. */
+  box-shadow: 0 1px 1px rgb(19 41 61 / 0.08), 0 10px 18px rgb(19 41 61 / 0.12);
   font-variant-numeric: tabular-nums;
-  /* Perforated top edge: a row of half-circle bites, as if torn from a pad. */
-  -webkit-mask: radial-gradient(circle var(--perf-radius) at 50% 0, #0000 97%, #000 100%) 0 0 /
+}
+
+/* Perforated top edge: half-circle bites in the page color, as if torn from a pad. */
+.slip::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--perf-radius);
+  background: radial-gradient(circle var(--perf-radius) at 50% 0, var(--mist) 95%, #0000 100%) 0 0 /
     var(--perf-gap) 100% repeat-x;
-  mask: radial-gradient(circle var(--perf-radius) at 50% 0, #0000 97%, #000 100%) 0 0 / var(--perf-gap)
-    100% repeat-x;
+  pointer-events: none;
 }
 
 .slip__brand {
