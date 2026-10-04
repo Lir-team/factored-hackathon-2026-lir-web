@@ -1,0 +1,160 @@
+/* The case slip: a receipt that fills itself in. The one bold element on the page. */
+
+.layout__slip {
+  filter: drop-shadow(0 1px 1px rgb(19 41 61 / 0.08)) drop-shadow(0 10px 18px rgb(19 41 61 / 0.12));
+}
+
+.slip {
+  --perf-gap: 16px;
+  --perf-radius: 6px;
+  position: relative;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  background: var(--paper);
+  border-radius: 0 0 var(--radius-surface) var(--radius-surface);
+  font-variant-numeric: tabular-nums;
+  /* Perforated top edge: a row of half-circle bites, as if torn from a pad. */
+  -webkit-mask: radial-gradient(circle var(--perf-radius) at 50% 0, #0000 97%, #000 100%) 0 0 /
+    var(--perf-gap) 100% repeat-x;
+  mask: radial-gradient(circle var(--perf-radius) at 50% 0, #0000 97%, #000 100%) 0 0 / var(--perf-gap)
+    100% repeat-x;
+}
+
+.slip__brand {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: var(--lh-head);
+}
+
+.slip__title {
+  margin-top: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  font-weight: 400;
+  color: var(--slate);
+}
+
+.slip__rows,
+.slip__folio {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 2px dashed var(--rule);
+}
+
+.slip__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+}
+
+.slip__row dt {
+  flex: none;
+  color: var(--slate);
+}
+
+.slip__row dd {
+  min-width: 0;
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* An unfilled value is a dotted blank line, like a paper form. */
+.slip__row dd.is-empty::after {
+  content: "";
+  display: inline-block;
+  width: 6.5rem;
+  height: 1em;
+  border-bottom: 2px dotted var(--rule);
+}
+
+.slip__row--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.slip__charges {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slip__charges li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-weight: 400;
+  text-align: left;
+}
+
+.slip__amount {
+  white-space: nowrap;
+}
+
+.slip__row--total {
+  margin-top: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--rule);
+}
+
+.slip__row--total dd {
+  font-size: var(--step-1);
+}
+
+.slip__folio-value {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  letter-spacing: 0.01em;
+}
+
+.slip__folio-value.is-empty::after {
+  width: 9rem;
+}
+
+/* The stamp lands once, when the report is sent. */
+.slip__stamp {
+  position: absolute;
+  right: var(--space-4);
+  bottom: calc(var(--space-7) + var(--space-4));
+  padding: var(--space-1) var(--space-4);
+  border: 3px solid var(--marigold);
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 4px var(--marigold);
+  background: rgb(255 245 217 / 0.88);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 700;
+  line-height: 1.2;
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+
+.slip.is-stamped .slip__stamp {
+  animation: slip-stamp 460ms var(--ease-out) both;
+}
+
+@keyframes slip-stamp {
+  0% {
+    opacity: 0;
+    transform: rotate(-8deg) scale(1.9);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(-8deg) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .slip {
+    padding: var(--space-5) var(--space-4) var(--space-4);
+  }
+}
