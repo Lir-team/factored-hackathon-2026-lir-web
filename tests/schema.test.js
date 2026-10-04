@@ -33,7 +33,7 @@ const common = {
 /** One valid answer set per category. */
 const STATES = {
   unrecognized_charge: {
-    transaction_ids: ["TXN-20261001-65233", "TXN-20260928-41207"],
+    transaction_ids: ["TXN-D1-007", "TXN-D1-005"],
     card_in_possession: "unsure",
     shared_credentials: "yes",
     freeze_card_requested: true,
@@ -43,12 +43,12 @@ const STATES = {
     incident_occurred_at: "2026-10-02T23:15",
     incident_location: "Coyoacán, CDMX",
     used_after: true,
-    transaction_ids: ["TXN-20261003-88412"],
+    transaction_ids: ["TXN-D1-008"],
     shared_credentials: "no",
     freeze_card_requested: true,
   },
-  improper_fee: { transaction_ids: ["TXN-20260929-49311"] },
-  transaction_inquiry: { transaction_ids: ["TXN-20260930-55871"] },
+  improper_fee: { transaction_ids: ["TXN-D1-006"] },
+  transaction_inquiry: { transaction_ids: ["TXN-D1-007"] },
   app_issue: {},
   service_complaint: { contact_channel: "email", contact_value: "ana.gomez@example.com" },
   other_request: { contact_channel: "phone", contact_value: "+52 55 4123 8890" },
