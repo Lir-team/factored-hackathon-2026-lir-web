@@ -72,9 +72,11 @@ A full `202` body:
 The backend must re-validate everything. In particular, it checks that every
 `transaction_id` belongs to the customer and, when it requires a customer
 identity (`REQUIRE_IDENTITY=true`), that `customer.customer_id` matches the
-customer in the JWT. The deployed cases service runs without customer sign-in
-for now (`REQUIRE_IDENTITY=false`): it trusts the payload's `customer_id`, and
-the API key is what keeps strangers out.
+customer in the JWT. Customer sign-in is a lir-infra toggle (`customer_sign_in`,
+off by default). Off, the cases service runs with `REQUIRE_IDENTITY=false`: it
+trusts the payload's `customer_id`, and the API key is what keeps strangers out.
+On, the gateway also requires the customer JWT on `POST /v1/cases` and on the
+approval routes, and the service runs with `REQUIRE_IDENTITY=true`.
 
 ## Telegram Start link
 

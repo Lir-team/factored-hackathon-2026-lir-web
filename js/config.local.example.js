@@ -1,5 +1,5 @@
 /*
- * Local override for js/config.js, for pointing this page at the deployed
+ * Local override for js/config.js, for pointing the pages at the deployed
  * API Gateway. Copy it to js/config.local.js (git-ignored) and fill in the
  * values from `terraform output` in lir-infra:
  *
@@ -12,4 +12,5 @@
 window.LIR_CONFIG = {
   casesEndpoint: "https://<gateway-host>/v1/cases",
   apiKey: "<cases_api_key>",
+  approvalsEndpoint: "https://<gateway-host>/v1/approvals",
 };
