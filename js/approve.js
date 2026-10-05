@@ -117,7 +117,13 @@ async function main() {
   history.replaceState(null, "", location.pathname);
   if (!link || !endpoint) return fail("not_found");
 
-  const loaded = await loadApproval(endpoint, link, { authToken: await session.token() });
+  let authToken;
+  try {
+    authToken = await session.token();
+  } catch {
+    return fail("sign_in"); // no bank session: never show a card nobody can decide
+  }
+  const loaded = await loadApproval(endpoint, link, { authToken });
   if (!loaded.ok) return fail(loaded.kind);
   let card = loaded.card;
   translate(card.language);
@@ -131,9 +137,14 @@ async function main() {
         b.disabled = true;
         b.setAttribute("aria-busy", String(b === button));
       }
-      const decided = await decideApproval(endpoint, link, card, button.id === "approve", {
-        authToken: await session.token(),
-      });
+      let decided;
+      try {
+        decided = await decideApproval(endpoint, link, card, button.id === "approve", {
+          authToken: await session.token(),
+        });
+      } catch {
+        decided = { ok: false, kind: "network" }; // the sign-in failed: the customer can retry
+      }
       for (const b of buttons) b.removeAttribute("aria-busy");
       if (!decided.ok) {
         // Only a network failure can be retried: the others are final.

@@ -22,7 +22,7 @@ Request headers:
 | `Content-Type`    | `application/json`                                 |
 | `Accept`          | `application/json`                                 |
 | `Idempotency-Key` | the payload's `case_id` (a client UUID v4)         |
-| `Authorization`   | `Bearer <customer JWT>`, only when `authToken` is set in `js/config.js` |
+| `Authorization`   | `Bearer <customer JWT>`, from the sign-in (`signInEndpoint`) or a local `authToken` |
 
 Through API Gateway the request also carries the gateway's API key as the
 `key` query parameter (`POST /v1/cases?key=<apiKey>`), only when `apiKey` is

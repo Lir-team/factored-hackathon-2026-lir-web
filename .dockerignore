@@ -1,9 +1,6 @@
 .git
 .github
-.atl
-.claude
 docs
-odd
 tests
 node_modules
 package.json

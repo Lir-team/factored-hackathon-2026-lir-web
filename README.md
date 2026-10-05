@@ -33,7 +33,7 @@ comes back to the customer as an approval card.
 - **Three languages.** Spanish, Brazilian Portuguese and English, with a test
   that keeps the dictionaries in step.
 - **No framework, no build.** Plain HTML, CSS and ES modules. The business
-  logic lives in DOM-free modules covered by 78 tests on Node's built-in runner.
+  logic lives in DOM-free modules covered by 82 tests on Node's built-in runner.
 
 ## How it fits in Lir
 
@@ -53,8 +53,8 @@ flowchart LR
 | Repository | Role |
 | --- | --- |
 | `lir-web` (this repo) | Support page, approval card, and the case contract |
-| `lir-agent` | Cases and approvals API, and the Lir agent |
-| `lir-infra` | Terraform for the Google Cloud infrastructure |
+| [`factored-hackathon-2026-lir-agent`](https://github.com/Lir-team/factored-hackathon-2026-lir-agent) | Cases and approvals API, and the Lir agent |
+| [`factored-hackathon-2026-lir-infra`](https://github.com/Lir-team/factored-hackathon-2026-lir-infra) | Terraform for the Google Cloud infrastructure |
 
 ## Quick start
 
@@ -63,7 +63,7 @@ tests. There is nothing to install.
 
 ```sh
 python3 -m http.server 5500   # then open http://localhost:5500/
-npm test                      # 78 tests, Node's built-in runner
+npm test                      # 82 tests, Node's built-in runner
 ```
 
 Serve the folder over HTTP, since ES modules do not load from `file://`. Port
@@ -108,8 +108,14 @@ terraform output                      # the API Gateway host
 terraform output -raw cases_api_key   # the API key
 ```
 
-Fill in the gateway host and the key, then serve on port 5500 as above. Never
-commit `js/config.local.js`, since the key is a secret.
+Fill in the gateway host and the key, then serve on port 5500 as above. Keep
+`js/config.local.js` out of git (it is ignored).
+
+The API key is **public by design**: the deployed page serves it in `js/config.js`, as
+any browser API key. It only identifies the page to API Gateway; what protects the
+customer routes is the customer's JWT, and the key should be restricted (API and
+quota) in Google Cloud. `LIR_AUTH_TOKEN` is for local runs only: in production the page
+signs in through `LIR_SIGN_IN_ENDPOINT` and serves no token.
 
 ## The approval card
 
@@ -150,16 +156,21 @@ per-customer ordering key, and the CORS rules. The payload schema is
 
 ## Quality
 
-- **Tests:** `npm test` runs 78 tests on Node's built-in runner. They cover
+- **Tests:** `npm test` runs 82 tests on Node's built-in runner. They cover
   payload building, schema conformance, submission and error mapping, the
   statement loader, the approval flow, the Telegram hand-off, the QR code and
   i18n parity. The core modules (`js/core/`) never touch the DOM, which keeps
   them easy to test.
-- **CI/CD:** every push to `main` runs the tests on Node 22 and then deploys.
+- **CI/CD:** every pull request runs a syntax check, the tests, the shell script check
+  and `nginx -t` on the built image (`.github/workflows/ci.yml`). Every push to `main`
+  runs the tests, checks the image with `nginx -t` and deploys to Cloud Run.
 - **Accessibility:** the page uses semantic form controls with ARIA labelling,
   a visible focus ring, and layouts for both desktop and mobile.
 - **Safe rendering:** server data reaches the page through `textContent`,
   never through HTML strings.
+- **Security headers:** nginx sends a strict Content-Security-Policy (scripts only from
+  the page, network calls only to API Gateway), HSTS, `Permissions-Policy`,
+  `X-Frame-Options` and `nosniff` on every response (`deploy/security-headers.conf`).
 
 ## Deployment
 
@@ -199,8 +210,8 @@ js/
 schema/             JSON Schema for the case payload
 tests/              node --test suites
 docs/               case contract, design plan, screenshots
-deploy/             nginx config, runtime config script, Cloud Build file
-odd/tasks/          feature task documents
+deploy/             nginx config and security headers, runtime config script, Cloud Build file
+.github/workflows/  CI on pull requests, deploy on main
 ```
 
 ## Design
@@ -217,5 +228,4 @@ voice. The reasoning, tokens and revisions are in
 - QR codes: [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator)
   by Kazuhiko Arase, vendored unchanged as `js/vendor/qrcode.js` (commit
   `64f5976`, MIT, see `js/vendor/qrcode.LICENSE`).
-- Visual direction: Anthropic's `frontend-design` skill, kept under
-  `.claude/skills/frontend-design/` (Apache-2.0, see its `LICENSE.txt`).
+- Visual direction: Anthropic's `frontend-design` skill (Apache-2.0).

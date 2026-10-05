@@ -1,6 +1,6 @@
 # Design plan
 
-Written before any markup, following `.claude/skills/frontend-design/SKILL.md`
+Written before any markup, following Anthropic's `frontend-design` skill
 (Anthropic, Apache-2.0): plan, review against the brief, build, critique.
 
 ## Brief
