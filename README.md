@@ -1,5 +1,7 @@
 # lir-web
 
+<p align="center"><img src="docs/assets/lir-web.gif" alt="Lir" width="160"></p>
+
 [![Deploy to Cloud Run](https://github.com/Lir-team/factored-hackathon-2026-lir-web/actions/workflows/deploy.yml/badge.svg)](https://github.com/Lir-team/factored-hackathon-2026-lir-web/actions/workflows/deploy.yml)
 
 The customer-facing support page of **LATAM Bank**, the synthetic bank of the
