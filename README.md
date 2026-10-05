@@ -91,8 +91,9 @@ Handy links:
 | `casesEndpoint` | `http://localhost:8080/v1/cases` | URL of `POST /v1/cases`. `null` turns on demo mode. |
 | `apiKey` | `null` | API Gateway key, sent as `?key=`. The local API needs none. |
 | `approvalsEndpoint` | `http://localhost:8080/v1/approvals` | Base URL for the approval card. |
-| `transactionsEndpoint` | `http://localhost:8080/v1/me/transactions` | The signed-in customer's statement. Used only when `authToken` is also set. |
-| `authToken` | `null` | Customer JWT, sent as `Authorization: Bearer`. Sign-in is mocked, so it is issued outside this repo. |
+| `transactionsEndpoint` | `http://localhost:8080/v1/me/transactions` | The signed-in customer's statement. Used only when there is a token. |
+| `authToken` | `null` | Fixed customer JWT, sent as `Authorization: Bearer` (local runs). |
+| `signInEndpoint` | `null` | The bank sign-in (the demo one: `POST /v1/demo/sign-in`). When set, the page asks it for a short-lived token, renewed before it expires, instead of using `authToken`. |
 
 Without a token, or when the statement request fails (an expired sign-in, for
 example), the page keeps the bundled demo customer. Cards and contact details
@@ -175,6 +176,7 @@ environment.
 | `LIR_APPROVALS_ENDPOINT` | `approvalsEndpoint` |
 | `LIR_TRANSACTIONS_ENDPOINT` | `transactionsEndpoint` |
 | `LIR_AUTH_TOKEN` | `authToken` |
+| `LIR_SIGN_IN_ENDPOINT` | `signInEndpoint` (the deployed page uses it; no fixed token) |
 
 [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs the tests,
 authenticates to Google Cloud through Workload Identity Federation (no
