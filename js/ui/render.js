@@ -1,7 +1,7 @@
 /* Renderers for the option lists: categories, cards, statement rows, answers, channels. */
 import { CATEGORY_ORDER, CATEGORIES, CONTACT_CHANNELS, ANSWERS } from "../core/case-rules.js";
 import { formatMoney, formatDay, formatTime, countryName } from "../core/format.js";
-import { getLocale, t } from "../i18n/index.js";
+import { getLocale, hasKey, t } from "../i18n/index.js";
 import { h } from "./dom.js";
 
 export function cardName(card) {
@@ -85,7 +85,7 @@ export function renderStatement(list, transactions, { mode, selectedIds, custome
   list.replaceChildren(
     ...transactions.map((txn) => {
       const card = customer.cards.find((c) => c.last4 === txn.card_last4);
-      const meta = [t(`channel.${txn.channel}`)];
+      const meta = hasKey(`channel.${txn.channel}`) ? [t(`channel.${txn.channel}`)] : [];
       if (txn.country !== customer.country) meta.push(countryName(txn.country, locale));
       if (card) meta.push(cardName(card));
       return h(

@@ -10,6 +10,8 @@ Gateway.
 - Payload builder: `buildCasePayload` in `js/core/case-payload.js`.
 - Case attributes (Pub/Sub message attributes, and the archived object's
   metadata): `pubsubAttributesFor` in the same module.
+- A transaction's `merchant` is `null` when the charge has none (a bank
+  transfer). The key is always present; the client never invents a merchant.
 
 ## Endpoint: `POST /v1/cases`
 
@@ -47,7 +49,8 @@ Responses:
 
 Error codes are field-scoped. The client already translates `required`,
 `too_short`, `too_long`, `too_many`, `unknown`, `invalid`, `in_future`,
-`invalid_phone`, `invalid_email` and `invalid_telegram`; any other code shows
+`invalid_phone`, `invalid_email` and `invalid_telegram` (for `transaction_ids`:
+`required`, `too_many`, `unknown` and `invalid`); any other code shows
 a generic "check this answer" message. Unknown field names, or a 4xx without
 an `errors` map, show the "the bank rejected the report" line instead. Field
 names match the form:

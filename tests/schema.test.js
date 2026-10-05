@@ -87,3 +87,13 @@ test("the checker rejects payloads that break the contract", () => {
   const { schema_version, ...missing } = payload;
   assert.ok(check(schema, missing).some((e) => e.includes("missing schema_version")));
 });
+
+test("a charge without a merchant (a transfer) is sent as null and passes the schema", () => {
+  const transfer = { ...customer.transactions[0], transaction_id: "TXN-TRANSFER", merchant: null };
+  const withTransfer = { ...customer, transactions: [transfer, ...customer.transactions] };
+  const state = { ...common, category: "transaction_inquiry", transaction_ids: ["TXN-TRANSFER"] };
+  const payload = buildCasePayload(state, { ...ctx(), customer: withTransfer });
+  assert.equal(payload.transactions[0].merchant, null);
+  assert.deepEqual(check(schema, payload), []);
+  assert.ok(check(schema, { ...payload, transactions: [{ ...payload.transactions[0], merchant: "" }] }).length > 0);
+});
