@@ -12,6 +12,8 @@
  *   null -> demo mode: the request is simulated and nothing leaves the browser.
  * apiKey: the API Gateway key, sent as the `key` query parameter on the cases
  *   request. null -> no key (the local lir-agent API needs none).
+ * transactionsEndpoint: the URL of GET /v1/me/transactions; with authToken set, the
+ *   page shows the signed-in customer's statement from the API. null -> demo customer.
  * approvalsEndpoint: the base URL of /v1/approvals, used by the approval card
  *   (aprobar.html). The agent's link to the card carries the request id and a
  *   single-use token.
@@ -24,6 +26,7 @@ window.LIR_CONFIG = Object.assign(
     casesEndpoint: "http://localhost:8080/v1/cases",
     apiKey: null,
     approvalsEndpoint: "http://localhost:8080/v1/approvals",
+    transactionsEndpoint: "http://localhost:8080/v1/me/transactions",
     authToken: null,
   },
   window.LIR_CONFIG,

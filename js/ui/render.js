@@ -110,7 +110,7 @@ export function renderStatement(list, transactions, { mode, selectedIds, custome
           h(
             "span",
             { class: "txn__body" },
-            h("span", { class: "txn__merchant", text: txn.merchant }),
+            h("span", { class: "txn__merchant", text: txn.merchant ?? t("statement.no_merchant") }),
             h("span", { class: "txn__meta", text: meta.join(", ") }),
           ),
           h("span", { class: "txn__amount", text: formatMoney(txn.amount, txn.currency, locale) }),

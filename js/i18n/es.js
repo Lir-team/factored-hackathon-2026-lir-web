@@ -58,6 +58,7 @@ export default {
   "charges.hint.single": "Elige un movimiento. Son tus movimientos de los últimos días.",
   "statement.legend": "Movimientos recientes",
   "statement.empty": "No hay movimientos recientes con esta tarjeta.",
+  "statement.no_merchant": "Transferencia",
   "channel.pos": "En tienda",
   "channel.online": "En línea",
   "channel.atm": "Cajero",

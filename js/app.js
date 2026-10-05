@@ -1,5 +1,5 @@
 /* Entry point: wires the form, the conditional steps, the live slip and submission. */
-import { customer } from "./data/mock-customer.js";
+import { customer as demoCustomer } from "./data/mock-customer.js";
 import {
   categoryRule,
   resolveCards,
@@ -8,6 +8,7 @@ import {
   transactionModeFor,
 } from "./core/case-rules.js";
 import { buildCasePayload, randomUUID, validateCase } from "./core/case-payload.js";
+import { loadCustomer } from "./core/statement.js";
 import { nextCaseId, partitionServerErrors, submitCase } from "./core/submit.js";
 import {
   applyTranslations,
@@ -34,6 +35,7 @@ import {
 import { renderSlip } from "./ui/slip.js";
 import { renderSuccess, stampSlip } from "./ui/success.js";
 
+let customer = demoCustomer;
 const form = $("#case-form");
 const submitButton = $('button[type="submit"][form="case-form"]');
 
@@ -265,13 +267,23 @@ function onLanguageClick(event) {
   update();
 }
 
-function init() {
+async function init() {
   // ?lang=pt|en|es wins (handy for links and screenshots), then the saved choice.
   const params = new URLSearchParams(location.search);
   const requested = params.get("lang");
   if (isLanguage(requested)) setLanguage(requested);
   else setLanguage(storedLanguage());
   applyLanguage();
+  try {
+    ({ customer } = await loadCustomer(demoCustomer, {
+      endpoint: window.LIR_CONFIG?.transactionsEndpoint ?? null,
+      authToken: window.LIR_CONFIG?.authToken ?? null,
+      apiKey: window.LIR_CONFIG?.apiKey ?? null,
+    }));
+  } catch (error) {
+    // Expired or missing sign-in: keep the demo statement; a live send then reports the 401.
+    console.warn("Statement not loaded", error);
+  }
   $("#customer-name").textContent = customer.name;
   $("#customer-id").textContent = customer.customer_id;
 

@@ -58,6 +58,7 @@ export default {
   "charges.hint.single": "Choose one transaction. These are your transactions from the last few days.",
   "statement.legend": "Recent transactions",
   "statement.empty": "There are no recent transactions on this card.",
+  "statement.no_merchant": "Transfer",
   "channel.pos": "In store",
   "channel.online": "Online",
   "channel.atm": "ATM",

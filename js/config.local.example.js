@@ -13,4 +13,5 @@ window.LIR_CONFIG = {
   casesEndpoint: "https://<gateway-host>/v1/cases",
   apiKey: "<cases_api_key>",
   approvalsEndpoint: "https://<gateway-host>/v1/approvals",
+  transactionsEndpoint: "https://<gateway-host>/v1/me/transactions",
 };
