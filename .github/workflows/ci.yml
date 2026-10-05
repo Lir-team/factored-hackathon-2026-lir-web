@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax check
+        run: find js tests -name "*.js" -not -path "js/vendor/*" -print0 | xargs -0 -n1 node --check
+
+      - name: Run tests
+        run: npm test
+
+      - name: Check the shell script
+        run: bash -n deploy/40-lir-config.sh
+
+      - name: Check the nginx configuration
+        run: |
+          docker build -t lir-web-ci .
+          docker run --rm lir-web-ci nginx -t

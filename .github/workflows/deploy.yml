@@ -11,11 +11,10 @@ concurrency:
 
 env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-  PROJECT_NUMBER: "244524731492"
   REGION: ${{ vars.GCP_REGION || 'us-central1' }}
   AR_REPO: ${{ vars.AR_REPO || 'lir-web' }}
   SERVICE: ${{ vars.CLOUD_RUN_SERVICE || 'lir-web' }}
-  WIF_PROVIDER: projects/244524731492/locations/global/workloadIdentityPools/${{ vars.WIF_POOL || 'github' }}/providers/${{ vars.WIF_PROVIDER || 'github' }}
+  WIF_PROVIDER: projects/${{ vars.GCP_PROJECT_NUMBER || '244524731492' }}/locations/global/workloadIdentityPools/${{ vars.WIF_POOL || 'github' }}/providers/${{ vars.WIF_PROVIDER || 'github' }}
   SERVICE_ACCOUNT: lir-web-sa@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
 jobs:
@@ -51,6 +50,7 @@ jobs:
         run: |
           IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/${SERVICE}:${GITHUB_SHA}"
           docker build -t "$IMAGE" .
+          docker run --rm "$IMAGE" nginx -t  # a broken config never reaches Cloud Run
           docker push "$IMAGE"
           echo "uri=$IMAGE" >> "$GITHUB_OUTPUT"
 
