@@ -9,6 +9,7 @@ window.LIR_CONFIG = Object.assign(
     casesEndpoint: $(json "${LIR_CASES_ENDPOINT:-}"),
     apiKey: $(json "${LIR_API_KEY:-}"),
     approvalsEndpoint: $(json "${LIR_APPROVALS_ENDPOINT:-}"),
+    transactionsEndpoint: $(json "${LIR_TRANSACTIONS_ENDPOINT:-}"),
     authToken: $(json "${LIR_AUTH_TOKEN:-}"),
   },
   window.LIR_CONFIG,

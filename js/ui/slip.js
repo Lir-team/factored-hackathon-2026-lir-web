@@ -25,7 +25,7 @@ export function renderSlip(state, ctx) {
       h(
         "li",
         {},
-        h("span", { class: "slip__merchant", text: txn.merchant }),
+        h("span", { class: "slip__merchant", text: txn.merchant ?? t("statement.no_merchant") }),
         h("span", { class: "slip__amount", text: formatMoney(txn.amount, txn.currency, locale) }),
       ),
     ),

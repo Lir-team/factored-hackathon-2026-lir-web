@@ -58,6 +58,7 @@ export default {
   "charges.hint.single": "Escolha uma transação. Estas são suas transações dos últimos dias.",
   "statement.legend": "Transações recentes",
   "statement.empty": "Não há transações recentes com este cartão.",
+  "statement.no_merchant": "Transferência",
   "channel.pos": "Na loja",
   "channel.online": "On-line",
   "channel.atm": "Caixa eletrônico",
