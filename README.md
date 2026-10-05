@@ -2,8 +2,6 @@
 
 <p align="center"><img src="docs/assets/lir-web.gif" alt="Lir" width="160"></p>
 
-[![Deploy to Cloud Run](https://github.com/Lir-team/factored-hackathon-2026-lir-web/actions/workflows/deploy.yml/badge.svg)](https://github.com/Lir-team/factored-hackathon-2026-lir-web/actions/workflows/deploy.yml)
-
 The customer-facing support page of **LATAM Bank**, the synthetic bank of the
 Factored AI & Data Hackathon 2026. A signed-in customer reports a problem (an
 unrecognized charge, a lost or stolen card, a wrong fee), and the page turns it
