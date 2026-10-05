@@ -20,6 +20,8 @@
  * authToken: the customer JWT the gateway checks when customer sign-in is on,
  *   sent as "Authorization: Bearer <token>". Sign-in is mocked in this demo, so
  *   the token is issued outside this repo. null -> no Authorization header.
+ * signInEndpoint: the URL of the bank sign-in (the demo one: POST /v1/demo/sign-in).
+ *   When set, the page asks it for a short-lived token instead of using authToken.
  */
 window.LIR_CONFIG = Object.assign(
   {
@@ -28,6 +30,7 @@ window.LIR_CONFIG = Object.assign(
     approvalsEndpoint: "http://localhost:8080/v1/approvals",
     transactionsEndpoint: "http://localhost:8080/v1/me/transactions",
     authToken: null,
+    signInEndpoint: null,
   },
   window.LIR_CONFIG,
 );

@@ -8,6 +8,7 @@ import {
   transactionModeFor,
 } from "./core/case-rules.js";
 import { buildCasePayload, randomUUID, validateCase } from "./core/case-payload.js";
+import { createSession } from "./core/session.js";
 import { loadCustomer } from "./core/statement.js";
 import { nextCaseId, partitionServerErrors, submitCase } from "./core/submit.js";
 import {
@@ -36,6 +37,8 @@ import { renderSlip } from "./ui/slip.js";
 import { renderSuccess, stampSlip } from "./ui/success.js";
 
 let customer = demoCustomer;
+// The bank sign-in (mocked by the demo sign-in): every live request asks it for a valid token.
+const session = createSession(window.LIR_CONFIG ?? {});
 const form = $("#case-form");
 const submitButton = $('button[type="submit"][form="case-form"]');
 
@@ -45,6 +48,7 @@ const view = {
   submitted: false, // after the first submit attempt every error shows
   serverErrors: {}, // field errors returned by the backend
   sendError: null, // { kind, status } of the last failed send
+  signInFailed: false, // the live statement could not load: sending would file as the wrong customer
   sending: false,
   caseId: randomUUID(), // the Idempotency-Key: kept across retries, rotated after a rejection
   success: null, // { payload, outcome }
@@ -188,6 +192,11 @@ async function onSubmit(event) {
     return;
   }
 
+  if (view.signInFailed) {
+    view.sendError = { kind: "signin" };
+    update();
+    return;
+  }
   const payload = buildCasePayload(state, { customer, language: getLanguage(), uuid: () => view.caseId });
   view.sending = true;
   update();
@@ -195,7 +204,7 @@ async function onSubmit(event) {
   try {
     outcome = await submitCase(payload, {
       endpoint: window.LIR_CONFIG?.casesEndpoint ?? null,
-      authToken: window.LIR_CONFIG?.authToken ?? null,
+      authToken: await session.token(),
       apiKey: window.LIR_CONFIG?.apiKey ?? null,
     });
   } catch {
@@ -277,12 +286,14 @@ async function init() {
   try {
     ({ customer } = await loadCustomer(demoCustomer, {
       endpoint: window.LIR_CONFIG?.transactionsEndpoint ?? null,
-      authToken: window.LIR_CONFIG?.authToken ?? null,
+      authToken: await session.token(),
       apiKey: window.LIR_CONFIG?.apiKey ?? null,
     }));
   } catch (error) {
-    // Expired or missing sign-in: keep the demo statement; a live send then reports the 401.
+    // No sign-in or no statement: say so instead of filing the case as the demo customer.
     console.warn("Statement not loaded", error);
+    view.signInFailed = true;
+    view.sendError = { kind: "signin" };
   }
   $("#customer-name").textContent = customer.name;
   $("#customer-id").textContent = customer.customer_id;
