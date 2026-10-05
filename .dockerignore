@@ -1,0 +1,9 @@
+.git
+.github
+.atl
+.claude
+docs
+odd
+tests
+node_modules
+js/config.local.js
