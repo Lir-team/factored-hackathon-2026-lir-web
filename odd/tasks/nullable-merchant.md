@@ -36,10 +36,10 @@ inventing one. Unknown error codes must still tell the customer what to fix.
 
 ## Tasks
 
-- [ ] T1 (web, delegated): `merchant` nullable in the schema, `error.transaction_ids.invalid`
+- [x] T1 (web, delegated): `merchant` nullable in the schema, `error.transaction_ids.invalid`
       in es/pt/en, channels normalized to lowercase with labels for `app`, `transfer`, `web`;
       tests; contract doc.
-- [ ] T2 (backend, delegated): same schema change; null `merchant` handled wherever the case
+- [x] T2 (backend, delegated): same schema change; null `merchant` handled wherever the case
       payload is read; tests.
 
 ## Acceptance criteria
@@ -60,3 +60,13 @@ Delegated direct: two repos and several non-trivial files (writer trigger).
 ## Progress
 
 - Branches `fix/nullable-merchant` created from `origin/main` in both repos.
+- T1 done in `lir-web` `724e7c7` (`fix(case): accept charges without a merchant`): schema
+  `merchant` is `string | null`; channels lowercased in `toCustomer`; `channel.app|transfer|web`
+  and `error.transaction_ids.invalid` in es/pt/en; render omits a channel without a label.
+  `npm test`: 78 pass, 0 fail (3 new tests seen RED first).
+- T2 done in the backend `4931340` (`fix(cases): accept charges without a merchant`): schema copy
+  byte-identical (`cmp`); no backend code reads `merchant` from a case payload (only
+  `transaction_id`, `description`, incident fields). `uv run pytest -q`: 432 passed, 17 skipped.
+- Open: the backend maps `minLength`/`maxLength` under `transactions` to `transaction_ids`
+  `too_short`/`too_long`, which the web has no copy for (generic message). Only a broken client
+  can trigger them.
