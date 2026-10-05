@@ -1,143 +1,219 @@
 # lir-web
 
-The customer-facing support form of **LATAM Bank**, the synthetic bank of the
-Factored AI & Data Hackathon 2026. A signed-in customer reports a problem
-(an unrecognized charge, a lost or stolen card, a wrong fee, and so on), and
-the page sends a versioned case payload to the bank's API, which hands it to
-the Lir agent. When the customer picks Telegram, the confirmation offers a
-"Continue on Telegram" button (and a QR code on wide screens) so they can open
-the chat with Lir.
+[![Deploy to Cloud Run](https://github.com/Lir-team/lir-web/actions/workflows/deploy.yml/badge.svg)](https://github.com/Lir-team/lir-web/actions/workflows/deploy.yml)
 
-It is plain HTML, CSS and JavaScript: no framework, no bundler, no npm
-dependencies. This repo defines the contract the backend (the `lir-agent`
-repo, behind Google API Gateway) accepts.
+The customer-facing support page of **LATAM Bank**, the synthetic bank of the
+Factored AI & Data Hackathon 2026. A signed-in customer reports a problem (an
+unrecognized charge, a lost or stolen card, a wrong fee), and the page turns it
+into a validated, versioned case for **Lir**, the bank's support agent. The
+conversation then continues on Telegram, and any sensitive action Lir proposes
+comes back to the customer as an approval card.
 
-![Desktop, unrecognized-charge path](docs/screenshots/desktop-fraud.png)
+![Reporting an unrecognized charge on desktop](docs/screenshots/desktop-fraud.png)
 
-More screenshots: [desktop](docs/screenshots/desktop.png),
-[Telegram hand-off](docs/screenshots/success-telegram.png),
-[Telegram hand-off, mobile](docs/screenshots/success-telegram-mobile.png),
-[mobile](docs/screenshots/mobile.png),
-[mobile, lost card](docs/screenshots/mobile-lost-card.png).
+| Telegram hand-off | Mobile | Lost card, mobile |
+| --- | --- | --- |
+| ![Confirmation with the Telegram button and QR code](docs/screenshots/success-telegram.png) | ![The form on a phone](docs/screenshots/mobile.png) | ![The lost-card path on a phone](docs/screenshots/mobile-lost-card.png) |
 
-## Run it
+## Highlights
 
-ES modules do not load from `file://`, so serve the folder with any static
-server. Use port 5500: the lir-agent API runs on 8080 and only allows the
-`http://localhost:5500` origin (`CORS_ORIGINS` in its `.env`).
+- **The charge is the evidence.** For a fraud report the customer picks the
+  charge from their statement instead of typing amounts, so the agent gets the
+  exact `transaction_id` it can verify.
+- **A contract, not just a form.** Every case is built against a JSON Schema
+  (`schema_version` 1.1), sent with an `Idempotency-Key`, and documented down
+  to its Pub/Sub attributes in [`docs/case-contract.md`](docs/case-contract.md).
+  This repo defines what the backend accepts.
+- **Urgency changes the page.** Fraud reasons raise an alert that offers to
+  freeze the card, and the case carries a priority hint (`critical` for a lost
+  card or a large or foreign fraudulent charge).
+- **Human in the loop.** Lir never acts on the customer's behalf (opening a
+  dispute, for example) without an explicit decision on the approval card,
+  tied to a hash of the exact content the customer saw.
+- **Three languages.** Spanish, Brazilian Portuguese and English, with a test
+  that keeps the dictionaries in step.
+- **No framework, no build.** Plain HTML, CSS and ES modules. The business
+  logic lives in DOM-free modules covered by 78 tests on Node's built-in runner.
 
-```sh
-# Terminal 1: the lir-agent API on :8080 (see that repo's README)
+## How it fits in Lir
 
-# Terminal 2: web on :5500
-cd ../lir-web && python3 -m http.server 5500
+```mermaid
+flowchart LR
+    C([Customer]) -->|reports a problem| W[lir-web<br/>support page]
+    W -->|"POST /v1/cases<br/>(JSON Schema 1.1)"| G[API Gateway]
+    G --> A[lir-agent<br/>cases service]
+    A -->|archive| S[(Cloud Storage)]
+    A -->|publish| P[[Pub/Sub<br/>lir-cases]]
+    P -->|push| L[Lir agent]
+    L <-->|chat| T([Telegram])
+    L -->|single-use link| R[lir-web<br/>approval card]
+    R -->|"POST /v1/approvals/{id}/decision"| G
 ```
 
-Then open <http://localhost:5500/>.
+| Repository | Role |
+| --- | --- |
+| `lir-web` (this repo) | Support page, approval card, and the case contract |
+| `lir-agent` | Cases and approvals API, and the Lir agent |
+| `lir-infra` | Terraform for the Google Cloud infrastructure |
 
-## Test it
+## Quick start
 
-The pure logic modules do not touch the DOM, so Node's built-in test runner
-covers them (Node 18 or later, nothing to install):
+You need Python 3 (or any static file server) and Node 18 or later for the
+tests. There is nothing to install.
 
 ```sh
-node --test tests/
+python3 -m http.server 5500   # then open http://localhost:5500/
+npm test                      # 78 tests, Node's built-in runner
 ```
 
-Useful links while demoing: `?reason=unrecognized_charge` preselects a reason,
-and `?lang=pt` or `?lang=en` picks the language (the switch in the top bar
-remembers the choice).
+Serve the folder over HTTP, since ES modules do not load from `file://`. Port
+5500 matters: it is the only origin the lir-agent API allows through CORS.
 
-## Configure it
+By default the page sends cases to a local lir-agent API on port 8080 (see that
+repository's README). To try the page on its own, use **demo mode**: create
+`js/config.local.js` with `window.LIR_CONFIG = { casesEndpoint: null };`. The
+request is then simulated, and the confirmation shows the case reference and
+the exact payload a backend would receive.
 
-`js/config.js` sets `window.LIR_CONFIG`:
+Handy links:
 
-- `casesEndpoint`: the URL of `POST /v1/cases`. The default,
-  `http://localhost:8080/v1/cases`, is the local lir-agent API; a deployment
-  points it at the API Gateway. Set it to `null` for demo mode: the page
-  simulates the request and shows a reference number and the payload, with no
-  Telegram button.
-- `apiKey`: the API Gateway key, sent as `?key=<apiKey>` on the cases request.
-  `null` (the default) sends no key; the local lir-agent API needs none.
-- `approvalsEndpoint`: the base URL of `/v1/approvals`, used by the approval card. The
-  default, `http://localhost:8080/v1/approvals`, is the local lir-agent API.
-- `authToken`: the customer JWT the gateway checks when customer sign-in is on
-  (`customer_sign_in` in lir-infra), sent as `Authorization: Bearer <token>`.
-  Sign-in is mocked in this demo, so the token is issued outside this repo.
-  `null` sends no `Authorization` header.
+- `?reason=unrecognized_charge` opens the form with a reason already picked.
+- `?lang=pt` or `?lang=en` picks the language. The switch in the top bar
+  remembers the choice.
 
-### Point the local page at the deployed Gateway
+## Configuration
 
-`index.html` and `aprobar.html` load `js/config.local.js` before `js/config.js`, and its values
-win. The file is git-ignored; when it is missing the browser skips it (a 404 in
-the console) and the defaults apply.
+`js/config.js` sets `window.LIR_CONFIG`. Values in the git-ignored
+`js/config.local.js`, loaded first, take precedence.
+
+| Key | Default | Purpose |
+| --- | --- | --- |
+| `casesEndpoint` | `http://localhost:8080/v1/cases` | URL of `POST /v1/cases`. `null` turns on demo mode. |
+| `apiKey` | `null` | API Gateway key, sent as `?key=`. The local API needs none. |
+| `approvalsEndpoint` | `http://localhost:8080/v1/approvals` | Base URL for the approval card. |
+| `transactionsEndpoint` | `http://localhost:8080/v1/me/transactions` | The signed-in customer's statement. Used only when `authToken` is also set. |
+| `authToken` | `null` | Customer JWT, sent as `Authorization: Bearer`. Sign-in is mocked, so it is issued outside this repo. |
+
+Without a token, or when the statement request fails (an expired sign-in, for
+example), the page keeps the bundled demo customer. Cards and contact details
+are not in the hackathon dataset, so they stay simulated.
+
+### Pointing a local page at the deployed API
 
 ```sh
 cp js/config.local.example.js js/config.local.js
-# In lir-infra:
-terraform output                       # the API Gateway URL
-terraform output -raw cases_api_key    # the API key
+# in lir-infra:
+terraform output                      # the API Gateway host
+terraform output -raw cases_api_key   # the API key
 ```
 
-Put `https://<gateway-host>/v1/cases` in `casesEndpoint`, the key in `apiKey`
-and `https://<gateway-host>/v1/approvals` in `approvalsEndpoint`, then serve the page on port 5500 as above: the deployed cases service
-only allows the `http://localhost:5500` origin. Never commit
-`js/config.local.js`; the key is a secret.
+Fill in the gateway host and the key, then serve on port 5500 as above. Never
+commit `js/config.local.js`, since the key is a secret.
 
-## Approval card
+## The approval card
 
-`aprobar.html` is where a customer approves or rejects an important action the bank
-would take on their behalf (opening a dispute today). Nothing runs without that approval.
-The lir-agent sends the customer a single-use link to it, by chat or Telegram button:
+`aprobar.html` is where the customer approves or rejects an action Lir wants to
+take for them. The agent sends a single-use link by chat:
 `aprobar.html?id=APR-...&t=<token>`.
 
-- The page reads the request from `GET {approvalsEndpoint}/{id}` with the token in the
-  `X-Approval-Token` header, shows it (title and details, in the customer's language) and
-  sends the decision to `POST {approvalsEndpoint}/{id}/decision` with the `content_hash` of
-  the card it showed, so a decision always refers to that exact content.
-- The token is a credential: the page removes it from the address bar on load, sends no
-  `Referer`, and writes every value with `textContent`.
-- A spent, wrong or expired link, a request decided elsewhere and a network failure each get
-  their own message. Only a network failure can be retried.
-- Step-up: when the agent requires the bank's sign-in for approvals, the page sends the
-  customer's JWT (`authToken`) with every call, and a missing or someone else's sign-in gets
-  its own screen.
-- `js/core/approval.js` has no DOM access; `tests/approval.test.js` covers it.
+- The page reads the request from `GET {approvalsEndpoint}/{id}` with the
+  token in `X-Approval-Token`, shows it in the customer's language, and posts
+  the decision with the `content_hash` of what it displayed. A decision always
+  refers to that exact content.
+- The token is handled as a credential. It is removed from the address bar on
+  load and never sent as a `Referer`, and every value from the server is
+  written with `textContent`.
+- Spent, wrong or expired links, requests decided elsewhere and network
+  failures each get their own message. Only a network failure can be retried.
+- When the agent requires step-up sign-in, every call carries the customer's
+  JWT, and a missing sign-in, or someone else's, gets its own screen.
 
-## Backend contract
+## Case contract
 
-The page sends a versioned JSON case to `POST /v1/cases` with an
-`Idempotency-Key`. The endpoint, error shape, Telegram Start link,
-category-to-intent mapping, the Pub/Sub hand-off to the agent and the
-CORS rules are in
-[`docs/case-contract.md`](docs/case-contract.md); the payload schema is
-[`schema/case.schema.json`](schema/case.schema.json).
+The page sends a versioned JSON case to `POST /v1/cases`, keyed by a client
+UUID. Seven categories map to the agent's intents:
 
-## Languages
+| Category | Intent hint | Fraud |
+| --- | --- | --- |
+| `unrecognized_charge` | `cargo_no_reconocido` | yes |
+| `card_lost_stolen` | `cargo_no_reconocido` | yes |
+| `improper_fee` | `cobro_indebido` | no |
+| `transaction_inquiry` | `consulta_movimiento` | no |
+| `app_issue`, `service_complaint` | `otra_queja` | no |
+| `other_request` | `fuera_de_alcance` | no |
 
-Spanish (default), Brazilian Portuguese and English live in `js/i18n/`. A test
-checks that the three dictionaries have the same keys and placeholders.
+The full contract is in [`docs/case-contract.md`](docs/case-contract.md):
+headers, error shape, the Telegram start link, the Pub/Sub hand-off with a
+per-customer ordering key, and the CORS rules. The payload schema is
+[`schema/case.schema.json`](schema/case.schema.json) (JSON Schema 2020-12).
 
-## Folder layout
+## Quality
+
+- **Tests:** `npm test` runs 78 tests on Node's built-in runner. They cover
+  payload building, schema conformance, submission and error mapping, the
+  statement loader, the approval flow, the Telegram hand-off, the QR code and
+  i18n parity. The core modules (`js/core/`) never touch the DOM, which keeps
+  them easy to test.
+- **CI/CD:** every push to `main` runs the tests on Node 22 and then deploys.
+- **Accessibility:** the page uses semantic form controls with ARIA labelling,
+  a visible focus ring, and layouts for both desktop and mobile.
+- **Safe rendering:** server data reaches the page through `textContent`,
+  never through HTML strings.
+
+## Deployment
+
+The page runs on Cloud Run as an nginx image serving the static files on port
+8080 ([`Dockerfile`](Dockerfile), [`deploy/nginx.conf`](deploy/nginx.conf)).
+At start-up, [`deploy/40-lir-config.sh`](deploy/40-lir-config.sh) writes
+`js/config.js` from the environment, so a single image serves every
+environment.
+
+| Variable | Sets |
+| --- | --- |
+| `LIR_CASES_ENDPOINT` | `casesEndpoint` (unset means demo mode) |
+| `LIR_API_KEY` | `apiKey` |
+| `LIR_APPROVALS_ENDPOINT` | `approvalsEndpoint` |
+| `LIR_TRANSACTIONS_ENDPOINT` | `transactionsEndpoint` |
+| `LIR_AUTH_TOKEN` | `authToken` |
+
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs the tests,
+authenticates to Google Cloud through Workload Identity Federation (no
+long-lived keys), pushes an image tagged with the commit SHA to Artifact
+Registry, and deploys it. A manual build path through Cloud Build is in
+[`deploy/cloudbuild.yaml`](deploy/cloudbuild.yaml).
+
+## Project structure
 
 ```
-index.html          page shell
-css/                tokens, base layout, form and slip styles
-js/                 app entry, config, UI modules, pure core logic, i18n
-tests/              node --test suites for the pure modules
-docs/               design plan, backend contract, screenshots
+index.html          support page
+aprobar.html        approval card
+css/                design tokens, layout, form and case-slip styles
+js/
+  core/             DOM-free logic: case rules, payload, submit, statement, approval
+  ui/               rendering, form state, errors, case slip, success screen
+  i18n/             es, pt and en dictionaries
+  data/             demo customer
+  vendor/           QR code generator (MIT)
 schema/             JSON Schema for the case payload
-odd/tasks/          feature task document
+tests/              node --test suites
+docs/               case contract, design plan, screenshots
+deploy/             nginx config, runtime config script, Cloud Build file
+odd/tasks/          feature task documents
 ```
+
+## Design
+
+The page is built around a **case slip**, a receipt that sits beside the form,
+fills itself in as the customer answers, and gets its case number and timestamp
+on submit, like a stamped bank voucher. The palette uses a single accent color,
+alert red appears only on the fraud path, and the copy is plain and in active
+voice. The reasoning, tokens and revisions are in
+[`docs/design-plan.md`](docs/design-plan.md).
 
 ## Credits
 
-The QR code on the confirmation screen is drawn with
-[qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) by
-Kazuhiko Arase, vendored unchanged as `js/vendor/qrcode.js` (`js/dist/qrcode.js`
-at commit `64f5976`) under the MIT license (see `js/vendor/qrcode.LICENSE`).
-
-The visual direction follows Anthropic's `frontend-design` skill, kept
-under `.claude/skills/frontend-design/` and licensed under Apache-2.0 (see
-the `LICENSE.txt` next to it). The design decisions for this page are in
-[`docs/design-plan.md`](docs/design-plan.md).
+- QR codes: [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator)
+  by Kazuhiko Arase, vendored unchanged as `js/vendor/qrcode.js` (commit
+  `64f5976`, MIT, see `js/vendor/qrcode.LICENSE`).
+- Visual direction: Anthropic's `frontend-design` skill, kept under
+  `.claude/skills/frontend-design/` (Apache-2.0, see its `LICENSE.txt`).
