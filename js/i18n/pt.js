@@ -62,6 +62,9 @@ export default {
   "channel.pos": "Na loja",
   "channel.online": "On-line",
   "channel.atm": "Caixa eletrônico",
+  "channel.app": "App",
+  "channel.transfer": "Transferência",
+  "channel.web": "Web",
 
   "step.details.title": "Conte mais",
   "description.label": "O que aconteceu, com suas palavras",
@@ -114,6 +117,7 @@ export default {
   "error.transaction_ids.required": "Marque a transação a que seu relato se refere.",
   "error.transaction_ids.too_many": "Escolha só uma transação.",
   "error.transaction_ids.unknown": "Escolha uma transação da lista.",
+  "error.transaction_ids.invalid": "Não foi possível enviar uma das transações marcadas. Marque-a de novo ou escolha outra.",
   "error.card_last4.required": "Escolha o cartão perdido ou roubado.",
   "error.card_last4.unknown": "Escolha um cartão da lista.",
   "error.incident_occurred_at.required": "Informe quando aconteceu; um horário aproximado já ajuda.",

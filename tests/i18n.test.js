@@ -35,6 +35,15 @@ test("every category and channel has its copy", () => {
   }
 });
 
+test("every statement channel and transaction error code has its copy", () => {
+  for (const channel of ["pos", "online", "atm", "app", "transfer", "web"]) {
+    assert.ok(`channel.${channel}` in DICTIONARIES.es, `channel.${channel}`);
+  }
+  for (const code of ["required", "too_many", "unknown", "invalid"]) {
+    assert.ok(`error.transaction_ids.${code}` in DICTIONARIES.es, `error.transaction_ids.${code}`);
+  }
+});
+
 test("setLanguage switches lookups and Intl locale, ignoring unknown codes", () => {
   assert.equal(getLanguage(), "es");
   setLanguage("pt");

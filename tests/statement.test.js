@@ -51,6 +51,13 @@ test("API lines keep their ids and use the simulated card; contacts stay simulat
   assert.deepEqual(customer.contacts, demo.contacts);
 });
 
+test("API channels are lowercased so they match the dictionary keys", () => {
+  const raw = ["ATM", "POS", "App", "Transfer", "Web", null];
+  const lines = raw.map((channel, i) => ({ ...body.transactions[0], transaction_id: `TX-${i}`, channel }));
+  const customer = toCustomer({ ...body, transactions: lines }, demo);
+  assert.deepEqual(customer.transactions.map((t) => t.channel), ["atm", "pos", "app", "transfer", "web", null]);
+});
+
 test("an expired sign-in is an error, not a silent demo statement", async () => {
   await assert.rejects(
     loadCustomer(demo, { endpoint: "https://gw/x", authToken: "old", fetchImpl: fakeFetch(401, {}) }),

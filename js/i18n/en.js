@@ -62,6 +62,9 @@ export default {
   "channel.pos": "In store",
   "channel.online": "Online",
   "channel.atm": "ATM",
+  "channel.app": "App",
+  "channel.transfer": "Transfer",
+  "channel.web": "Web",
 
   "step.details.title": "Tell us more",
   "description.label": "What happened, in your own words",
@@ -113,6 +116,7 @@ export default {
   "error.transaction_ids.required": "Check the transaction your report is about.",
   "error.transaction_ids.too_many": "Choose only one transaction.",
   "error.transaction_ids.unknown": "Choose a transaction from the list.",
+  "error.transaction_ids.invalid": "One of the transactions you checked could not be sent. Check it again or choose another one.",
   "error.card_last4.required": "Choose the card that was lost or stolen.",
   "error.card_last4.unknown": "Choose a card from the list.",
   "error.incident_occurred_at.required": "Enter when it happened; an approximate time is fine.",

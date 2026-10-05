@@ -4,7 +4,8 @@
  * The customer comes from the sign-in JWT, never from the page. Without an endpoint or a
  * token the page stays in demo mode with the bundled mock customer. The dataset has no cards
  * or contact details, so those stay simulated: every statement line is shown on the
- * customer's first mock card.
+ * customer's first mock card. Channels arrive mixed case (`ATM`, `App`) and are lowercased to
+ * match the dictionary keys; transfers have no merchant (`null`).
  */
 import { withApiKey } from "./submit.js";
 
@@ -41,7 +42,7 @@ export function toCustomer(body, demo) {
       amount: t.amount,
       currency: t.currency,
       country: t.country,
-      channel: t.channel,
+      channel: t.channel?.toLowerCase() ?? null,
       status: t.status ?? null,
       card_last4: card,
     }),

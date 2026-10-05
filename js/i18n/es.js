@@ -62,6 +62,9 @@ export default {
   "channel.pos": "En tienda",
   "channel.online": "En línea",
   "channel.atm": "Cajero",
+  "channel.app": "App",
+  "channel.transfer": "Transferencia",
+  "channel.web": "Web",
 
   "step.details.title": "Cuéntanos más",
   "description.label": "Qué pasó, con tus palabras",
@@ -115,6 +118,7 @@ export default {
   "error.transaction_ids.required": "Marca el movimiento al que se refiere tu reporte.",
   "error.transaction_ids.too_many": "Elige un solo movimiento.",
   "error.transaction_ids.unknown": "Elige un movimiento de la lista.",
+  "error.transaction_ids.invalid": "Uno de los movimientos marcados no se pudo enviar. Vuelve a marcarlo o elige otro.",
   "error.card_last4.required": "Elige la tarjeta que perdiste o te robaron.",
   "error.card_last4.unknown": "Elige una tarjeta de la lista.",
   "error.incident_occurred_at.required": "Indica cuándo pasó; una hora aproximada está bien.",
