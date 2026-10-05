@@ -140,6 +140,7 @@ export default {
     "The bank couldn't receive the report (error {status}). Your answers are still here; try again in a few seconds.",
   "send.rejected": "The bank rejected the report (error {status}). Check your answers and try again.",
   "send.retry": "Try again",
+  "send.signin": "We couldn't open your bank session, so the report can't be sent. Reload the page to try again.",
 
   "success.title": "Report sent",
   "success.folio": "Your case reference:",

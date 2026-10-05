@@ -9,12 +9,13 @@ import {
   loadApproval,
   outcomeMessage,
 } from "./core/approval.js";
+import { createSession } from "./core/session.js";
 import { applyTranslations, getLocale, isLanguage, setLanguage, t } from "./i18n/index.js";
 
 const $ = (id) => document.getElementById(id);
 const endpoint = window.LIR_CONFIG?.approvalsEndpoint;
 // The customer's JWT from the bank's sign-in: required when approvals need it (step-up).
-const auth = { authToken: window.LIR_CONFIG?.authToken ?? null };
+const session = createSession(window.LIR_CONFIG ?? {});
 const LONG_VALUE = 32;
 
 function translate(language) {
@@ -116,7 +117,7 @@ async function main() {
   history.replaceState(null, "", location.pathname);
   if (!link || !endpoint) return fail("not_found");
 
-  const loaded = await loadApproval(endpoint, link, auth);
+  const loaded = await loadApproval(endpoint, link, { authToken: await session.token() });
   if (!loaded.ok) return fail(loaded.kind);
   let card = loaded.card;
   translate(card.language);
@@ -130,7 +131,9 @@ async function main() {
         b.disabled = true;
         b.setAttribute("aria-busy", String(b === button));
       }
-      const decided = await decideApproval(endpoint, link, card, button.id === "approve", auth);
+      const decided = await decideApproval(endpoint, link, card, button.id === "approve", {
+        authToken: await session.token(),
+      });
       for (const b of buttons) b.removeAttribute("aria-busy");
       if (!decided.ok) {
         // Only a network failure can be retried: the others are final.

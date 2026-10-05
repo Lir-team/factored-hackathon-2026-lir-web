@@ -141,6 +141,7 @@ export default {
     "O banco não conseguiu receber o relato (erro {status}). Suas respostas continuam aqui; tente de novo em alguns segundos.",
   "send.rejected": "O banco recusou o relato (erro {status}). Revise os dados e tente de novo.",
   "send.retry": "Tentar de novo",
+  "send.signin": "Não conseguimos abrir sua sessão do banco, então não podemos enviar o relato. Recarregue a página para tentar de novo.",
 
   "success.title": "Relato enviado",
   "success.folio": "Seu número de protocolo:",

@@ -142,6 +142,7 @@ export default {
     "El banco no pudo recibir el reporte (error {status}). Tus respuestas siguen aquí; intenta de nuevo en unos segundos.",
   "send.rejected": "El banco rechazó el reporte (error {status}). Revisa los datos e intenta de nuevo.",
   "send.retry": "Intentar de nuevo",
+  "send.signin": "No pudimos abrir tu sesión del banco, así que no podemos enviar el reporte. Recarga la página para intentarlo de nuevo.",
 
   "success.title": "Reporte enviado",
   "success.folio": "Tu folio de seguimiento:",
