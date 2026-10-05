@@ -6,4 +6,5 @@ docs
 odd
 tests
 node_modules
+package.json
 js/config.local.js

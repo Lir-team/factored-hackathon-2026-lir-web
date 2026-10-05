@@ -1,0 +1,16 @@
+# Builds and pushes the lir-web image. Submit from the repository root:
+#
+#   gcloud builds submit . --config deploy/cloudbuild.yaml \
+#     --substitutions _IMAGE=<image_registry>/lir-web:<tag> \
+#     --service-account <build_service_account> \
+#     --gcs-source-staging-dir gs://<build_source_bucket>/source
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-t", "${_IMAGE}", "."]
+
+images:
+  - ${_IMAGE}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
