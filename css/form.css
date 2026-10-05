@@ -1,0 +1,692 @@
+/* The form: one paper surface, steps separated by numbered headings. */
+
+.case-form {
+  padding: var(--space-6) clamp(var(--space-4), 4vw, var(--space-6)) var(--space-6);
+  background: var(--paper);
+  border-radius: var(--radius-surface);
+}
+
+fieldset {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+/* Steps */
+
+.step:not([data-step="reason"]) {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--rule);
+}
+
+.step > legend {
+  width: 100%;
+}
+
+.step__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  font-size: var(--step-2);
+}
+
+.step__num {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--step-0);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Radio choices (reasons and cards) */
+
+.choice-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.field .choice-list {
+  margin-top: var(--space-2);
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  background: var(--paper);
+  cursor: pointer;
+}
+
+.choice:hover {
+  border-color: var(--slate);
+}
+
+/* The two fraud reasons sit apart from the rest. */
+.choice--fraud + .choice:not(.choice--fraud) {
+  margin-top: var(--space-3);
+}
+
+.choice input,
+.check input,
+.txn__input {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0.15em 0 0;
+  accent-color: var(--ink);
+}
+
+.choice input:focus-visible,
+.txn__input:focus-visible {
+  box-shadow: none;
+}
+
+.choice:has(input:checked) {
+  border-color: var(--ink);
+  background: var(--marigold-tint);
+  box-shadow: inset 4px 0 0 var(--marigold);
+}
+
+.choice:has(input:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+
+.choice:has(input:checked):has(input:focus-visible) {
+  box-shadow: inset 4px 0 0 var(--marigold), var(--focus-ring);
+}
+
+.choice__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.choice__label {
+  font-weight: 700;
+}
+
+.choice__hint {
+  color: var(--slate);
+}
+
+/* Fraud alert: the only alert-red surface on the page. */
+
+.fraud-alert {
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-control);
+  background: var(--alert);
+  color: var(--paper);
+}
+
+.fraud-alert__title {
+  font-size: var(--step-1);
+}
+
+.fraud-alert p {
+  margin-top: var(--space-2);
+}
+
+.fraud-alert__target {
+  font-size: var(--step--1);
+}
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  left: 0;
+  width: 3rem;
+  height: 1.75rem;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.switch__track {
+  position: relative;
+  flex: none;
+  width: 3rem;
+  height: 1.75rem;
+  border: 2px solid var(--paper);
+  border-radius: var(--radius-pill);
+  transition: background-color 150ms var(--ease-out);
+}
+
+.switch__track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(1.75rem - 10px);
+  height: calc(1.75rem - 10px);
+  border-radius: 50%;
+  background: var(--paper);
+  transition: transform 150ms var(--ease-out);
+}
+
+.switch input:checked + .switch__track {
+  background: var(--paper);
+}
+
+.switch input:checked + .switch__track::after {
+  background: var(--alert);
+  transform: translateX(1.25rem);
+}
+
+.switch input:focus-visible {
+  box-shadow: none;
+}
+
+.switch input:focus-visible + .switch__track {
+  box-shadow: var(--focus-ring);
+}
+
+/* Fields */
+
+.field {
+  margin-top: var(--space-5);
+}
+
+.step__title + .field,
+.step > legend + .field {
+  margin-top: 0;
+}
+
+.field__label {
+  display: block;
+  font-weight: 700;
+}
+
+.field__hint {
+  margin-top: var(--space-1);
+  color: var(--slate);
+}
+
+.input {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: var(--space-2);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--slate);
+  border-radius: var(--radius-control);
+  background: var(--paper);
+}
+
+.input:focus-visible {
+  border-color: var(--ink);
+}
+
+.input--area {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.field__counter {
+  margin-top: var(--space-1);
+  font-size: var(--step--1);
+  color: var(--slate);
+  font-variant-numeric: tabular-nums;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 0 var(--space-5);
+  align-items: end;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  cursor: pointer;
+}
+
+/* Pills: yes/no answers and contact channels */
+
+.answers,
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.pill {
+  position: relative;
+  display: inline-flex;
+}
+
+.pill input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pill span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+}
+
+.pill:hover span {
+  border-color: var(--slate);
+}
+
+.pill input:checked + span {
+  border-color: var(--ink);
+  background: var(--marigold-tint);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.pill input:focus-visible {
+  box-shadow: none;
+}
+
+.pill input:focus-visible + span {
+  box-shadow: var(--focus-ring);
+}
+
+/* Statement picker: the charge is the evidence. */
+
+.statement {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+}
+
+.statement > legend {
+  float: left;
+  width: 100%;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--mist);
+}
+
+.statement__rows {
+  clear: both;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.statement__rows > li + li {
+  border-top: 1px solid var(--rule);
+}
+
+.statement__empty {
+  padding: var(--space-4);
+  color: var(--slate);
+}
+
+.txn {
+  display: grid;
+  grid-template-columns: auto 4.25rem minmax(0, 1fr) auto;
+  grid-template-areas: "input date body amount";
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+}
+
+.txn:hover {
+  background: color-mix(in srgb, var(--mist) 55%, var(--paper));
+}
+
+.txn:has(input:checked) {
+  background: var(--marigold-tint);
+  box-shadow: inset 4px 0 0 var(--marigold);
+}
+
+.txn:has(input:focus-visible) {
+  box-shadow: inset 0 0 0 2px var(--ink), inset 0 0 0 5px var(--marigold);
+}
+
+.txn__input {
+  grid-area: input;
+  margin: 0;
+}
+
+.txn__date {
+  grid-area: date;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--step--1);
+  line-height: 1.3;
+  color: var(--slate);
+  font-variant-numeric: tabular-nums;
+}
+
+.txn__day {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.txn__body {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.txn__merchant {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.txn__meta {
+  font-size: var(--step--1);
+  color: var(--slate);
+}
+
+.txn__amount {
+  grid-area: amount;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .txn {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "input body amount"
+      "input date amount";
+  }
+
+  .txn__date {
+    flex-direction: row;
+    gap: var(--space-2);
+  }
+}
+
+/* Buttons and submit row */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 var(--space-6);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-control);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.button--primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.button--primary:hover {
+  background: var(--ink-hover);
+}
+
+.button--secondary {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.button--secondary:hover {
+  background: var(--mist);
+}
+
+.button[aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.8;
+}
+
+.layout__submit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-5);
+}
+
+.submit-note {
+  color: var(--slate);
+}
+
+@media (max-width: 480px) {
+  .layout__submit .button {
+    width: 100%;
+  }
+}
+
+/* Errors: say what to fix, next to the field and in a summary on submit. */
+
+.error-summary {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 3px solid var(--alert);
+  border-radius: var(--radius-control);
+  background: var(--paper);
+}
+
+.error-summary:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.error-summary__title {
+  font-size: var(--step-1);
+}
+
+.error-summary__list {
+  margin-top: var(--space-2);
+  padding-left: var(--space-5);
+}
+
+.error-summary__list a {
+  color: var(--alert);
+  font-weight: 700;
+}
+
+.field__error {
+  margin-top: var(--space-1);
+  color: var(--alert);
+  font-weight: 700;
+}
+
+.step > .field__error {
+  margin: 0 0 var(--space-3);
+}
+
+.has-error:not(.step) {
+  padding-left: var(--space-4);
+  border-left: 4px solid var(--alert);
+}
+
+.has-error .input,
+.has-error .statement {
+  border-color: var(--alert);
+  border-width: 2px;
+}
+
+.has-error > .check {
+  margin-top: var(--space-2);
+}
+
+#declaration-field .check {
+  margin-top: 0;
+}
+
+.send-error {
+  flex-basis: 100%;
+  padding: var(--space-4);
+  border-left: 4px solid var(--alert);
+  background: var(--paper);
+}
+
+.send-error p {
+  font-weight: 700;
+}
+
+.send-error .button {
+  margin-top: var(--space-3);
+}
+
+/* Confirmation */
+
+.success {
+  padding: var(--space-6) clamp(var(--space-4), 4vw, var(--space-6));
+  background: var(--paper);
+  border-radius: var(--radius-surface);
+}
+
+.success:focus-visible {
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-surface);
+}
+
+.success__title {
+  font-size: var(--step-3);
+}
+
+.success__folio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-3);
+  font-size: var(--step-1);
+}
+
+.success__folio strong {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.success h3 {
+  margin-top: var(--space-6);
+}
+
+.success__next {
+  margin-top: var(--space-2);
+  padding-left: var(--space-5);
+}
+
+.success__next li + li {
+  margin-top: var(--space-2);
+}
+
+/* Telegram hand-off: the page's primary button, no new brand color. */
+.handoff {
+  margin-top: var(--space-5);
+}
+
+.handoff__link {
+  gap: var(--space-2);
+}
+
+@media (max-width: 480px) {
+  .handoff__link {
+    width: 100%;
+  }
+}
+
+/* The QR only helps when the page is on a computer and the phone is at hand. */
+.handoff__qr {
+  display: none;
+}
+
+@media (min-width: 901px) {
+  .handoff {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-5) var(--space-6);
+  }
+
+  .handoff__qr:not([hidden]) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .handoff__code {
+    flex: none;
+    width: 8.5rem;
+    height: 8.5rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    fill: var(--ink);
+  }
+
+  .handoff__qr figcaption {
+    max-width: 22ch;
+    color: var(--slate);
+    font-size: var(--step--1);
+  }
+}
+
+.success__demo {
+  margin-top: var(--space-5);
+  color: var(--slate);
+}
+
+.tech {
+  margin-top: var(--space-5);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--space-4);
+}
+
+.tech summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tech h4 {
+  margin-top: var(--space-4);
+  font-size: var(--step-0);
+}
+
+.tech pre {
+  margin-top: var(--space-2);
+  max-height: 24rem;
+  overflow: auto;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--mist);
+  font-size: var(--step--1);
+  line-height: 1.45;
+}
+
+.success > .button {
+  margin-top: var(--space-6);
+}

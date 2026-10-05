@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LATAM Bank: reportar un problema</title>
+    <meta name="description" content="Report a card or account problem to LATAM Bank and get a case reference." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600..700&display=swap"
+    />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/form.css" />
+    <link rel="stylesheet" href="css/slip.css" />
+    <script src="js/config.local.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vendor/qrcode.js" defer></script>
+    <script type="module" src="js/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main" data-i18n="skip">Saltar al formulario</a>
+
+    <header class="topbar">
+      <div class="topbar__inner">
+        <a class="wordmark" href="./">LATAM Bank</a>
+
+        <div class="lang-switch" role="group" aria-label="Idioma" data-i18n-aria-label="lang.label">
+          <button type="button" data-lang="es" aria-pressed="true" lang="es">ES</button>
+          <button type="button" data-lang="pt" aria-pressed="false" lang="pt-BR">PT</button>
+          <button type="button" data-lang="en" aria-pressed="false" lang="en">EN</button>
+        </div>
+
+        <p class="customer">
+          <span class="customer__name" id="customer-name">Ana Gómez</span>
+          <span class="customer__id" id="customer-id">CLI-DEMO-001</span>
+        </p>
+      </div>
+    </header>
+
+    <main id="main" class="page" tabindex="-1">
+      <div class="page-head">
+        <h1 data-i18n="page.title">Reportar un problema</h1>
+        <p data-i18n="page.lede">Cuéntanos qué pasó. Abrimos tu caso en cuanto lo envíes.</p>
+      </div>
+
+      <div class="layout">
+        <div class="layout__form">
+          <div class="error-summary" id="error-summary" tabindex="-1" aria-labelledby="error-summary-title" hidden>
+            <h2 class="error-summary__title" id="error-summary-title" data-i18n="errors.title"></h2>
+            <ul class="error-summary__list" id="error-summary-list"></ul>
+          </div>
+
+          <form id="case-form" class="case-form" novalidate>
+            <fieldset class="step" data-step="reason">
+              <legend>
+                <h2 class="step__title">
+                  <span class="step__num">1</span>
+                  <span data-i18n="step.reason.title">¿Qué pasó?</span>
+                </h2>
+              </legend>
+              <p class="field__error" id="error-category" hidden></p>
+              <div class="choice-list" id="category-options"></div>
+            </fieldset>
+
+            <section class="fraud-alert" id="fraud-alert" aria-labelledby="fraud-alert-title" hidden>
+              <h3 class="fraud-alert__title" id="fraud-alert-title" data-i18n="fraud.title">Protege tu dinero ahora</h3>
+              <p data-i18n="fraud.body"></p>
+              <label class="switch">
+                <input type="checkbox" role="switch" name="freeze_card_requested" id="freeze-card" />
+                <span class="switch__track" aria-hidden="true"></span>
+                <span class="switch__label" data-i18n="fraud.freeze">Congelar mi tarjeta ahora</span>
+              </label>
+              <p class="fraud-alert__target" id="freeze-target"></p>
+            </section>
+
+            <section class="step" data-step="card" aria-labelledby="step-card-title" hidden>
+              <h2 class="step__title" id="step-card-title">
+                <span class="step__num">2</span>
+                <span data-i18n="step.card.title">¿Qué tarjeta y cuándo pasó?</span>
+              </h2>
+              <fieldset class="field" id="card-field">
+                <legend class="field__label" data-i18n="card.legend">Tarjeta</legend>
+                <p class="field__error" id="error-card_last4" hidden></p>
+                <div class="choice-list choice-list--compact" id="card-options"></div>
+              </fieldset>
+              <div class="field-row">
+                <div class="field" id="incident-occurred-at-field">
+                  <label class="field__label" for="incident-occurred-at" data-i18n="incident.when">Cuándo pasó</label>
+                  <p class="field__hint" id="incident-occurred-at-hint" data-i18n="incident.when_hint"></p>
+                  <p class="field__error" id="error-incident_occurred_at" hidden></p>
+                  <input
+                    class="input"
+                    type="datetime-local"
+                    id="incident-occurred-at"
+                    name="incident_occurred_at"
+                    aria-describedby="incident-occurred-at-hint"
+                  />
+                </div>
+                <div class="field">
+                  <label class="field__label" for="incident-location" data-i18n="incident.where">Dónde pasó</label>
+                  <p class="field__hint" id="incident-location-hint" data-i18n="incident.where_hint"></p>
+                  <input
+                    class="input"
+                    type="text"
+                    id="incident-location"
+                    name="incident_location"
+                    maxlength="120"
+                    autocomplete="off"
+                    aria-describedby="incident-location-hint"
+                  />
+                </div>
+              </div>
+              <label class="check">
+                <input type="checkbox" name="used_after" id="used-after" />
+                <span data-i18n="incident.used_after">Veo compras que no hice después de perderla</span>
+              </label>
+            </section>
+
+            <section class="step" data-step="charges" aria-labelledby="step-charges-title" hidden>
+              <h2 class="step__title" id="step-charges-title">
+                <span class="step__num">2</span>
+                <span id="charges-title"></span>
+              </h2>
+              <div id="charges-field">
+              <p class="field__error" id="error-transaction_ids" hidden></p>
+              <fieldset class="statement" aria-describedby="charges-hint">
+                <legend class="field__hint" id="charges-hint"></legend>
+                <ul class="statement__rows" id="statement-rows"></ul>
+              </fieldset>
+              </div>
+            </section>
+
+            <section class="step" data-step="details" aria-labelledby="step-details-title" hidden>
+              <h2 class="step__title" id="step-details-title">
+                <span class="step__num">3</span>
+                <span data-i18n="step.details.title">Cuéntanos más</span>
+              </h2>
+              <div class="field" id="description-field">
+                <label class="field__label" for="description" data-i18n="description.label">Qué pasó, con tus palabras</label>
+                <p class="field__hint" id="description-hint" data-i18n="description.hint"></p>
+                <p class="field__error" id="error-description" hidden></p>
+                <textarea
+                  class="input input--area"
+                  id="description"
+                  name="description"
+                  rows="5"
+                  maxlength="1000"
+                  aria-describedby="description-hint description-count"
+                ></textarea>
+                <p class="field__counter" id="description-count"></p>
+              </div>
+
+              <fieldset class="field" id="possession-field" data-only="unrecognized_charge">
+                <legend class="field__label" data-i18n="possession.legend">¿Todavía tienes la tarjeta contigo?</legend>
+                <p class="field__error" id="error-card_in_possession" hidden></p>
+                <div class="answers" data-answers="card_in_possession"></div>
+              </fieldset>
+
+              <fieldset class="field" id="credentials-field" data-only="unrecognized_charge card_lost_stolen" aria-describedby="credentials-hint">
+                <legend class="field__label" data-i18n="credentials.legend"></legend>
+                <p class="field__hint" id="credentials-hint" data-i18n="credentials.hint"></p>
+                <p class="field__error" id="error-shared_credentials" hidden></p>
+                <div class="answers" data-answers="shared_credentials"></div>
+              </fieldset>
+            </section>
+
+            <section class="step" data-step="contact" aria-labelledby="step-contact-title" hidden>
+              <h2 class="step__title" id="step-contact-title">
+                <span class="step__num">4</span>
+                <span data-i18n="step.contact.title">¿Cómo te contactamos?</span>
+              </h2>
+              <fieldset class="field" id="channel-field">
+                <legend class="field__label" data-i18n="contact.legend">Canal preferido</legend>
+                <p class="field__error" id="error-contact_channel" hidden></p>
+                <div class="segmented" id="contact-channels"></div>
+              </fieldset>
+              <div class="field" id="contact-value-field">
+                <label class="field__label" for="contact-value" id="contact-value-label"></label>
+                <p class="field__error" id="error-contact_value" hidden></p>
+                <input class="input" type="text" id="contact-value" name="contact_value" maxlength="120" />
+              </div>
+              <div class="field" id="declaration-field">
+                <p class="field__error" id="error-declaration" hidden></p>
+                <label class="check">
+                  <input type="checkbox" name="declaration" id="declaration" />
+                  <span data-i18n="declaration"></span>
+                </label>
+              </div>
+            </section>
+          </form>
+
+          <section class="success" id="success" tabindex="-1" aria-labelledby="success-title" hidden>
+            <h2 class="success__title" id="success-title" data-i18n="success.title">Reporte enviado</h2>
+            <p class="success__folio">
+              <span data-i18n="success.folio"></span>
+              <strong id="success-folio"></strong>
+            </p>
+            <h3 data-i18n="success.next.title"></h3>
+            <ul class="success__next">
+              <li id="success-next-contact"></li>
+              <li id="success-next-freeze"></li>
+              <li id="success-next-outcome"></li>
+            </ul>
+            <div class="handoff" id="success-telegram" hidden>
+              <a
+                class="button button--primary handoff__link"
+                id="success-telegram-link"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span data-i18n="success.telegram.button">Continuar en Telegram</span>
+                <span class="visually-hidden" data-i18n="success.telegram.new_tab"></span>
+              </a>
+              <figure class="handoff__qr" id="success-telegram-qr">
+                <svg
+                  class="handoff__code"
+                  id="success-telegram-code"
+                  role="img"
+                  data-i18n-aria-label="success.telegram.qr_alt"
+                  xmlns="http://www.w3.org/2000/svg"
+                  shape-rendering="crispEdges"
+                >
+                  <path id="success-telegram-path" />
+                </svg>
+                <figcaption data-i18n="success.telegram.qr_caption"></figcaption>
+              </figure>
+            </div>
+            <p class="success__demo" id="success-demo" data-i18n="success.demo" hidden></p>
+            <details class="tech">
+              <summary data-i18n="success.tech.summary">Vista técnica</summary>
+              <h4 data-i18n="success.tech.payload"></h4>
+              <pre><code id="tech-payload"></code></pre>
+              <h4 data-i18n="success.tech.attributes"></h4>
+              <pre><code id="tech-attributes"></code></pre>
+            </details>
+            <button class="button button--secondary" type="button" id="report-another" data-i18n="success.again">
+              Reportar otro problema
+            </button>
+          </section>
+        </div>
+
+        <aside class="layout__slip" aria-label="Comprobante del caso" data-i18n-aria-label="slip.label">
+          <div class="slip" id="slip">
+            <div class="slip__head">
+              <p class="slip__brand">LATAM Bank</p>
+              <h2 class="slip__title" data-i18n="slip.title">Comprobante de reporte</h2>
+            </div>
+            <dl class="slip__rows">
+              <div class="slip__row">
+                <dt data-i18n="slip.reason">Motivo</dt>
+                <dd id="slip-reason"></dd>
+              </div>
+              <div class="slip__row slip__row--stack" id="slip-charges-row">
+                <dt data-i18n="slip.charges">Cargos</dt>
+                <dd><ul class="slip__charges" id="slip-charges"></ul></dd>
+              </div>
+              <div class="slip__row slip__row--total" id="slip-total-row">
+                <dt data-i18n="slip.total">Total</dt>
+                <dd id="slip-total"></dd>
+              </div>
+              <div class="slip__row" id="slip-card-row">
+                <dt data-i18n="slip.card">Tarjeta</dt>
+                <dd id="slip-card"></dd>
+              </div>
+              <div class="slip__row" id="slip-freeze-row">
+                <dt data-i18n="slip.freeze">Congelar tarjeta</dt>
+                <dd id="slip-freeze"></dd>
+              </div>
+              <div class="slip__row">
+                <dt data-i18n="slip.contact">Contacto</dt>
+                <dd id="slip-contact"></dd>
+              </div>
+              <div class="slip__row">
+                <dt data-i18n="slip.language">Idioma</dt>
+                <dd id="slip-language"></dd>
+              </div>
+            </dl>
+            <dl class="slip__folio">
+              <div class="slip__row">
+                <dt data-i18n="slip.folio">Folio</dt>
+                <dd class="slip__folio-value" id="slip-folio"></dd>
+              </div>
+              <div class="slip__row">
+                <dt data-i18n="slip.time">Fecha</dt>
+                <dd id="slip-time"></dd>
+              </div>
+            </dl>
+            <p class="slip__stamp" id="slip-stamp" aria-hidden="true" hidden>
+              <span data-i18n="slip.stamp">Recibido</span>
+            </p>
+          </div>
+        </aside>
+
+        <div class="layout__submit" id="submit-row" hidden>
+          <button class="button button--primary" type="submit" form="case-form" data-i18n="submit.button">
+            Enviar reporte
+          </button>
+          <p class="submit-note" data-i18n="submit.note"></p>
+          <div class="send-error" id="send-error" role="alert" hidden>
+            <p id="send-error-text"></p>
+            <button class="button button--secondary" type="button" id="retry" data-i18n="send.retry">
+              Intentar de nuevo
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p data-i18n="footer"></p>
+    </footer>
+  </body>
+</html>

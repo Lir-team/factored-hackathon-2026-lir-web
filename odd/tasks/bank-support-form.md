@@ -65,16 +65,16 @@ form produces a case payload that a future backend can publish to Pub/Sub.
 
 - [x] T0: Bootstrap. Create the repo, vendor the frontend-design skill
   (Apache-2.0), and write the design plan. Route: inline.
-- [ ] T1, scaffold: `index.html` shell, design tokens, base CSS, top bar,
+- [x] T1, scaffold: `index.html` shell, design tokens, base CSS, top bar,
   README. Route: delegated writer (2+ non-trivial files).
-- [ ] T2, form: the categories, the statement picker for charges, conditional
+- [x] T2, form: the categories, the statement picker for charges, conditional
   steps, and the live case slip. Route: delegated writer.
-- [ ] T3, behavior: a pure `case-payload.js` with `node --test` tests (RED
+- [x] T3, behavior: a pure `case-payload.js` with `node --test` tests (RED
   first), validation, submission to the configurable endpoint, demo mode, and
   the confirmation state. Route: delegated writer.
-- [ ] T4, i18n: ES/PT/EN dictionaries, a language switch, and `lang` set on
+- [x] T4, i18n: ES/PT/EN dictionaries, a language switch, and `lang` set on
   `<html>`. Route: delegated writer.
-- [ ] T5, contract and polish: `docs/case-contract.md`,
+- [x] T5, contract and polish: `docs/case-contract.md`,
   `schema/case.schema.json`, a11y and responsive passes, and a screenshot
   critique. Route: delegated writer, then a parent screenshot check.
 
@@ -97,7 +97,55 @@ form produces a case payload that a future backend can publish to Pub/Sub.
 ## Progress and evidence
 
 - T0: done. Engram mirror: PENDING (ambiguous_project: the MCP cwd is the parent folder, which holds several repos).
+- T1: `a9f5ac9` feat(scaffold). Route: delegated writer. Shell, tokens, base
+  layout, README.
+- T2: `ef69da2` feat(form). Route: delegated writer. Categories, statement
+  picker, card and incident step, conditional steps with renumbering, fraud
+  block with freeze toggle, live slip. Checked with a headless Firefox
+  screenshot of `?reason=unrecognized_charge`. Added a root `package.json`
+  with only `"type": "module"` and a `test` script so Node loads the ES
+  modules. About 1,650 lines, mostly markup, CSS and copy.
+- T3: `cd2f10a` feat(form). Route: delegated writer. Test-first: RED was
+  `node --test tests/` failing both files with `ERR_MODULE_NOT_FOUND`
+  (`case-payload.js`, `submit.js` missing); GREEN was 24/24 passing. Error
+  summary, inline errors, demo mode, retry with a stable Idempotency-Key, and
+  the stamped confirmation were checked in headless Firefox with a throwaway
+  driver script in a scratch copy (not committed).
+- T4: `b882b6b` feat(i18n). Route: delegated writer. `node --test tests/`:
+  28/28. A live switch to EN kept the answers and set `<html lang="en">`, the
+  title, the Intl formats and localStorage (headless Firefox check).
+- T5: feat(contract), the last commit on the branch. Route: delegated writer.
+  Schema, schema test with a small hand-written checker, contract doc, focus
+  polish. `node --test tests/`: 37/37. Screenshots in `docs/screenshots/`
+  (desktop 1440, mobile 390, lost-card path at 360); one critique pass moved
+  the slip stamp off the folio.
 
 ## Next step
 
-T1.
+Parent screenshot check, then decide the PR strategy (the branch is about
+3,900 authored lines over five work-unit commits) and the native review.
+
+## Native review (2026-10-04)
+
+- Range `0ed74c9..405a6b4`. Assessed as medium (`slice_budget_reached`). The
+  user granted consent.
+- One lens (reliability): **approved**. Acknowledged; authority burned
+  (lineage `review-99909d18f79f5a7a`).
+- Advisory follow-ups (informational, not blocking):
+  - [x] R3-silent-rejection: `3993a64`. `partitionServerErrors` keeps the
+    fields the form can show; unknown keys or no `errors` add the generic
+    `send.rejected` line and focus the visible retry button. RED: missing
+    export; GREEN: `node --test tests/` 43/43.
+  - [x] R3-idempotency-after-422: `3993a64`. `nextCaseId` rotates `case_id`
+    after a 4xx and keeps it for network/5xx retries; the contract limits
+    replay to the same key and to 2xx responses. RED/GREEN with the above.
+  - [x] R3-freeze-first-card-only: `3f52276`. Payload `cards` array (unique,
+    statement order) replaces `card`; `schema_version` 1.1; alert, slip and
+    confirmation name every card. RED: 6 failing payload/schema tests;
+    GREEN: 44/44. Headless Firefox smoke render OK.
+  - [x] R3-timeout-not-covering-body: `1f77f9e`. The timeout races the whole
+    exchange (body included) and aborts it; `view.sending` resets in a
+    `finally`. RED: 2 tests cancelled (hang); GREEN: 40/40.
+  - [x] R3-submit-coverage-gaps: `1f77f9e`, `3993a64`. Tests for a fetch that
+    never answers, a body that never arrives, a 4xx without a body
+    (characterization, already green) and a 4xx with only unknown keys.
